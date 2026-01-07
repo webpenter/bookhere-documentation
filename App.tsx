@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeHeaders, setActiveHeaders] = useState<{ id: string; text: string; level: number }[]>([]);
+  const [activeSectionId, setActiveSectionId] = useState<string>('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +33,26 @@ const App: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSectionId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -80% 0px' }
+    );
+
+    activeHeaders.forEach((header) => {
+      const el = document.getElementById(header.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activeHeaders]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -269,20 +290,42 @@ const App: React.FC = () => {
             </button>
 
             {activeHeaders.length > 0 && (
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col max-h-[calc(85vh-250px)]">
-                <h5 className="font-bold text-slate-900 text-sm mb-3 shrink-0">On this page</h5>
-                <ul className="space-y-3 text-xs text-slate-500 overflow-y-auto pr-2 custom-scrollbar">
-                  {activeHeaders.map((header) => (
-                    <li
-                      key={header.id}
-                      onClick={() => handleHeaderClick(header.id)}
-                      className={`hover:text-rose-500 cursor-pointer transition-colors font-medium break-words ${header.level === 3 ? 'pl-4' : ''
-                        }`}
-                    >
-                      {header.text}
-                    </li>
-                  ))}
-                </ul>
+              <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col max-h-[calc(85vh-250px)] shadow-sm">
+                <h5 className="font-bold text-slate-900 text-[10px] uppercase tracking-widest mb-4 shrink-0 flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-rose-500" />
+                  On this page
+                </h5>
+                <div className="relative overflow-hidden">
+                  {/* Progress Line */}
+                  <div className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-slate-200" />
+
+                  <ul className="space-y-4 text-[13px] text-slate-500 overflow-y-auto pr-2 custom-scrollbar relative">
+                    {activeHeaders.map((header) => {
+                      const isActive = activeSectionId === header.id;
+                      return (
+                        <li
+                          key={header.id}
+                          onClick={() => handleHeaderClick(header.id)}
+                          className={`
+                            relative pl-6 cursor-pointer transition-all duration-300 group
+                            ${isActive ? 'text-rose-600 font-bold' : 'hover:text-slate-900 font-medium'}
+                            ${header.level === 3 ? 'text-[12px] opacity-80' : ''}
+                          `}
+                        >
+                          {/* Active Dot */}
+                          <div className={`
+                            absolute left-0 top-[6px] w-[15px] h-[15px] rounded-full border-2 border-white transition-all duration-300 z-10
+                            ${isActive ? 'bg-rose-500 scale-100 shadow-lg shadow-rose-200' : 'bg-slate-300 scale-50 group-hover:scale-75 group-hover:bg-slate-400'}
+                          `} />
+
+                          <span className="block break-words leading-snug">
+                            {header.text}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               </div>
             )}
           </div>
