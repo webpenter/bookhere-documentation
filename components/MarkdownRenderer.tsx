@@ -16,6 +16,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
   const parseBlocks = (text: string) => {
     const lines = text.split('\n');
     const blocks: any[] = [];
@@ -103,17 +112,23 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
         flushList();
         // Handle Other Elements
         if (trimmed.startsWith('# ')) {
-          blocks.push({ type: 'h1', content: trimmed.replace('# ', '') });
+          const content = trimmed.replace('# ', '');
+          blocks.push({ type: 'h1', content, id: slugify(content) });
         } else if (trimmed.startsWith('## ')) {
-          blocks.push({ type: 'h2', content: trimmed.replace('## ', '') });
+          const content = trimmed.replace('## ', '');
+          blocks.push({ type: 'h2', content, id: slugify(content) });
         } else if (trimmed.startsWith('### ')) {
-          blocks.push({ type: 'h3', content: trimmed.replace('### ', '') });
+          const content = trimmed.replace('### ', '');
+          blocks.push({ type: 'h3', content, id: slugify(content) });
         } else if (trimmed.startsWith('#### ')) {
-          blocks.push({ type: 'h4', content: trimmed.replace('#### ', '') });
+          const content = trimmed.replace('#### ', '');
+          blocks.push({ type: 'h4', content, id: slugify(content) });
         } else if (trimmed.startsWith('##### ')) {
-          blocks.push({ type: 'h5', content: trimmed.replace('##### ', '') });
+          const content = trimmed.replace('##### ', '');
+          blocks.push({ type: 'h5', content, id: slugify(content) });
         } else if (trimmed.startsWith('###### ')) {
-          blocks.push({ type: 'h6', content: trimmed.replace('###### ', '') });
+          const content = trimmed.replace('###### ', '');
+          blocks.push({ type: 'h6', content, id: slugify(content) });
         } else if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
           blocks.push({ type: 'hr' });
         } else if (trimmed.startsWith('> ')) {
@@ -152,7 +167,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
         else if (href.startsWith('#')) {
           e.preventDefault();
           const id = href.slice(1);
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+          const element = document.getElementById(id);
+          if (element) {
+            const yOffset = -80; // Account for sticky header
+            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
         }
       }
     }
@@ -181,27 +201,27 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
         if (block.type === 'space') return <div key={i} className="h-2" />;
 
         if (block.type === 'h1') {
-          return <h1 key={i} className="text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight">{block.content}</h1>;
+          return <h1 key={i} id={block.id} className="text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight">{block.content}</h1>;
         }
 
         if (block.type === 'h2') {
-          return <h2 key={i} className="text-3xl font-bold text-slate-900 mt-10 mb-5 tracking-tight">{block.content}</h2>;
+          return <h2 key={i} id={block.id} className="text-3xl font-bold text-slate-900 mt-10 mb-5 tracking-tight">{block.content}</h2>;
         }
 
         if (block.type === 'h3') {
-          return <h3 key={i} className="text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight">{block.content}</h3>;
+          return <h3 key={i} id={block.id} className="text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight">{block.content}</h3>;
         }
 
         if (block.type === 'h4') {
-          return <h4 key={i} className="text-xl font-bold text-slate-800 mt-6 mb-3 tracking-tight">{block.content}</h4>;
+          return <h4 key={i} id={block.id} className="text-xl font-bold text-slate-800 mt-6 mb-3 tracking-tight">{block.content}</h4>;
         }
 
         if (block.type === 'h5') {
-          return <h5 key={i} className="text-lg font-bold text-slate-800 mt-4 mb-2 tracking-tight">{block.content}</h5>;
+          return <h5 key={i} id={block.id} className="text-lg font-bold text-slate-800 mt-4 mb-2 tracking-tight">{block.content}</h5>;
         }
 
         if (block.type === 'h6') {
-          return <h6 key={i} className="text-base font-bold text-slate-700 mt-4 mb-2 tracking-tight uppercase tracking-wider">{block.content}</h6>;
+          return <h6 key={i} id={block.id} className="text-base font-bold text-slate-700 mt-4 mb-2 tracking-tight uppercase tracking-wider">{block.content}</h6>;
         }
 
         if (block.type === 'hr') {
