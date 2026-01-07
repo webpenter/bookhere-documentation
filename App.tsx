@@ -154,7 +154,7 @@ const App: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6 lg:p-16 min-h-screen">
+        <main className="flex-1 min-w-0 p-6 lg:p-16 min-h-screen">
           <div className="max-w-4xl mx-auto">
             {/* Breadcrumbs */}
             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">

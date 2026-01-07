@@ -251,9 +251,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
 
         if (block.type === 'table') {
           return (
-            <div key={i} className="my-8 overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+            <div key={i} className="my-8 overflow-hidden rounded-2xl border border-slate-200 shadow-sm max-w-full">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse min-w-[600px] md:min-w-full">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
                       {block.content[0].map((cell: string, idx: number) => (
@@ -283,7 +283,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
         if (block.type === 'code') {
           const codeLines = block.content.split('\n');
           return (
-            <div key={i} className="relative group my-8 rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
+            <div key={i} className="relative group my-8 rounded-xl overflow-hidden border border-slate-800 shadow-2xl max-w-full">
               <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-1.5">
@@ -337,7 +337,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
           return (
             <p
               key={i}
-              className="text-slate-600 leading-relaxed text-lg"
+              className="text-slate-600 leading-relaxed text-lg break-words"
               dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }}
             />
           );
