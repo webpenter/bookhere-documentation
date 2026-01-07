@@ -25,6 +25,16 @@ const App: React.FC = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeHeaders, setActiveHeaders] = useState<{ id: string; text: string; level: number }[]>([]);
   const [activeSectionId, setActiveSectionId] = useState<string>('');
+  const sidebarScrollRef = React.useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    if (activeSectionId && sidebarScrollRef.current) {
+      const activeEl = sidebarScrollRef.current.querySelector(`[data-header-id="${activeSectionId}"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [activeSectionId]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -299,12 +309,16 @@ const App: React.FC = () => {
                   {/* Progress Line */}
                   <div className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-slate-200" />
 
-                  <ul className="space-y-4 text-[13px] text-slate-500 overflow-y-auto pr-2 custom-scrollbar relative">
+                  <ul
+                    ref={sidebarScrollRef}
+                    className="space-y-4 text-[13px] text-slate-500 overflow-y-auto pr-2 custom-scrollbar relative"
+                  >
                     {activeHeaders.map((header) => {
                       const isActive = activeSectionId === header.id;
                       return (
                         <li
                           key={header.id}
+                          data-header-id={header.id}
                           onClick={() => handleHeaderClick(header.id)}
                           className={`
                             relative pl-6 cursor-pointer transition-all duration-300 group
