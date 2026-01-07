@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Menu,
   X,
@@ -9,7 +9,8 @@ import {
   Sparkles,
   Layout,
   Clock,
-  HelpCircle
+  HelpCircle,
+  ArrowUp
 } from 'lucide-react';
 import { DOCS_CONTENT, APP_VERSION, DEMO_URL, SUPPORT_EMAIL } from './constants';
 import { DocsContent, DocSection } from './types';
@@ -21,6 +22,19 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const filteredDocs = useMemo<DocsContent>(() => {
     if (!searchQuery) return DOCS_CONTENT;
@@ -77,13 +91,20 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              onClick={() => setIsAiAssistantOpen(true)}
-              className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 group"
-            >
-              <Sparkles size={16} className="text-rose-400 group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline">Ask AI</span>
-            </button>
+            <div className="relative group">
+              <button
+                onClick={() => setIsAiAssistantOpen(true)}
+                className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 group"
+              >
+                <Sparkles size={16} className="text-rose-400 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Ask AI</span>
+              </button>
+              {/* Tooltip */}
+              <div className="absolute top-full right-0 mt-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0 transition-all pointer-events-none whitespace-nowrap shadow-xl z-[60]">
+                Get AI Help
+                <div className="absolute bottom-full right-6 -mb-1 border-4 border-transparent border-b-slate-900" />
+              </div>
+            </div>
             <a
               href={DEMO_URL}
               target="_blank"
@@ -202,12 +223,18 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-4">
-                <button
-                  className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                  title="Share this page"
-                >
-                  <ExternalLink size={20} />
-                </button>
+                <div className="relative group">
+                  <button
+                    className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                  >
+                    <ExternalLink size={20} />
+                  </button>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all pointer-events-none whitespace-nowrap shadow-xl">
+                    Share Page
+                    <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-900" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -283,6 +310,24 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Back to Top Button */}
+      <div className={`fixed bottom-8 right-8 z-50 transition-all duration-300 ${showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+        }`}>
+        <div className="relative group">
+          <button
+            onClick={scrollToTop}
+            className="p-4 bg-rose-500 text-white rounded-2xl shadow-2xl shadow-rose-200 hover:bg-rose-600 hover:-translate-y-1 active:scale-95 transition-all"
+          >
+            <ArrowUp size={24} />
+          </button>
+
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all pointer-events-none whitespace-nowrap shadow-xl">
+            Back to Top
+            <div className="absolute top-full right-6 -mt-1 border-4 border-transparent border-t-slate-900" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
