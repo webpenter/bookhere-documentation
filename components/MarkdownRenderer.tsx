@@ -160,6 +160,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
 
   const processInlineMarkdown = (text: string) => {
     return text
+      // Handle navigation paths like "Menu" → "Submenu" first to avoid matching quotes in generated HTML
+      .replace(/"([^"]+)"/g, '<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[13px] font-semibold mx-0.5 shadow-sm">$1</span>')
       .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-bold">$1</strong>')
       .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
       .replace(/__(.*?)__/g, '<strong class="text-slate-900 font-bold">$1</strong>')
@@ -167,8 +169,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
       .replace(/~~(.*?)~~/g, '<del class="line-through text-slate-400">$1</del>')
       .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-rose-500 hover:underline font-medium">$1</a>')
       .replace(/`(.*?)`/g, '<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
-      // Handle navigation paths like "Menu" → "Submenu"
-      .replace(/"([^"]+)"/g, '<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[13px] font-semibold mx-0.5 shadow-sm">$1</span>')
       .replace(/→/g, '<span class="text-slate-400 mx-1 font-light">→</span>');
   };
 
