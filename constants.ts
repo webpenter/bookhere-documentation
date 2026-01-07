@@ -365,14 +365,14 @@ If you already have a WordPress site with Homey theme:
 
 ### Backend Configuration Checklist
 
-  - [] WordPress installed and running
-    - [] Homey theme activated
-      - [] Required plugins installed
-        - [] Permalinks configured
-          - [] REST API accessible
-            - [] HTTPS enabled(SSL certificate)
-              - [] CORS configured(if needed)
-  -[] Test user accounts created
+  - [ ] WordPress installed and running
+  - [ ] Homey theme activated
+  - [ ] Required plugins installed
+  - [ ] Permalinks configured
+  - [ ] REST API accessible
+  - [ ] HTTPS enabled (SSL certificate)
+  - [ ] CORS configured (if needed)
+  - [ ] Test user accounts created
 
 ---
 
@@ -735,17 +735,17 @@ npm start --clear
 
 Before proceeding to customization and deployment:
 
--[] App runs on iOS simulator / device
-  - [] App runs on Android emulator / device
-    - [] Backend API connection working
-      - [] Google Maps displaying correctly
-        - [] Google Sign - In functional
-          - [] Stripe payment test successful
-            - [] Push notifications working
-              - [] All screens navigable
-                - [] No console errors
-                  - [] Image uploads working
-                    - [] Messaging system functional
+- [ ] App runs on iOS simulator / device
+- [ ] App runs on Android emulator / device
+- [ ] Backend API connection working
+- [ ] Google Maps displaying correctly
+- [ ] Google Sign-In functional
+- [ ] Stripe payment test successful
+- [ ] Push notifications working
+- [ ] All screens navigable
+- [ ] No console errors
+- [ ] Image uploads working
+- [ ] Messaging system functional
 
 ---
 
@@ -753,20 +753,20 @@ Before proceeding to customization and deployment:
 
 After successful installation:
 
-1. ** Read Configuration Guide ** -[CONFIGURATION.md](./CONFIGURATION.md)
-  - Customize app branding
-    - Configure advanced settings
-      - Set up payment webhooks
+1. **Read Configuration Guide** - [CONFIGURATION.md](./configuration)
+   - Customize app branding
+   - Configure advanced settings
+   - Set up payment webhooks
 
-2. ** Read Customization Guide ** -[CUSTOMIZATION.md](./CUSTOMIZATION.md)
-  - Change theme colors
-    - Update app icon and splash screen
-      - Customize UI components
+2. **Read Customization Guide** - [CUSTOMIZATION.md](./customization)
+   - Change theme colors
+   - Update app icon and splash screen
+   - Customize UI components
 
-3. ** Test All Features ** -[FEATURES.md](./FEATURES.md)
-  - Test guest features
-    - Test host features
-      - Test payment flows
+3. **Test All Features** - [FEATURES.md](./features)
+   - Test guest features
+   - Test host features
+   - Test payment flows
 
 4. ** Build for Production **
   - iOS: \`eas build --platform ios\`

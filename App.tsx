@@ -1,17 +1,18 @@
 
 import React, { useState, useMemo } from 'react';
-import { 
-  Menu, 
-  X, 
-  Search, 
-  ChevronRight, 
-  ExternalLink, 
+import {
+  Menu,
+  X,
+  Search,
+  ChevronRight,
+  ExternalLink,
   Sparkles,
   Layout,
   Clock,
   HelpCircle
 } from 'lucide-react';
 import { DOCS_CONTENT, APP_VERSION, DEMO_URL, SUPPORT_EMAIL } from './constants';
+import { DocsContent, DocSection } from './types';
 import MarkdownRenderer from './components/MarkdownRenderer';
 import AIAssistant from './components/AIAssistant';
 
@@ -21,13 +22,13 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
 
-  const filteredDocs = useMemo(() => {
+  const filteredDocs = useMemo<DocsContent>(() => {
     if (!searchQuery) return DOCS_CONTENT;
-    const result: typeof DOCS_CONTENT = {};
+    const result: DocsContent = {};
     Object.entries(DOCS_CONTENT).forEach(([key, val]) => {
-      const match = val.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                    val.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    val.tags?.some(tag => tag.includes(searchQuery.toLowerCase()));
+      const match = val.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        val.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        val.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
       if (match) {
         result[key] = val;
       }
@@ -43,7 +44,7 @@ const App: React.FC = () => {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600"
             >
@@ -65,9 +66,9 @@ const App: React.FC = () => {
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="text-slate-400 group-focus-within:text-rose-500 transition-colors" size={18} />
               </div>
-              <input 
-                type="text" 
-                placeholder="Search across 60+ guides..." 
+              <input
+                type="text"
+                placeholder="Search across 60+ guides..."
                 className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -76,14 +77,14 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button 
+            <button
               onClick={() => setIsAiAssistantOpen(true)}
               className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 group"
             >
               <Sparkles size={16} className="text-rose-400 group-hover:scale-110 transition-transform" />
               <span className="hidden sm:inline">Ask AI</span>
             </button>
-            <a 
+            <a
               href={DEMO_URL}
               target="_blank"
               rel="noopener noreferrer"
@@ -106,25 +107,27 @@ const App: React.FC = () => {
             <div className="mb-8">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Core Documentation</p>
               <div className="space-y-1">
-                {Object.entries(DOCS_CONTENT).map(([key, item]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setActiveTab(key);
-                      setSidebarOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${
-                      activeTab === key 
-                      ? 'bg-rose-50 text-rose-600 shadow-sm border border-rose-100' 
-                      : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-100'
-                    }`}
-                  >
-                    <item.icon size={18} className={`${activeTab === key ? 'text-rose-500' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
-                    {item.title}
-                    {activeTab === key && <ChevronRight size={14} className="ml-auto opacity-50" />}
-                  </button>
-                ))}
+                {Object.entries(DOCS_CONTENT).map(([key, item]: [string, DocSection]) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setActiveTab(key);
+                        setSidebarOpen(false);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === key
+                        ? 'bg-rose-50 text-rose-600 shadow-sm border border-rose-100'
+                        : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-100'
+                        }`}
+                    >
+                      <Icon size={18} className={`${activeTab === key ? 'text-rose-500' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
+                      {item.title}
+                      {activeTab === key && <ChevronRight size={14} className="ml-auto opacity-50" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -171,8 +174,16 @@ const App: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
-              <MarkdownRenderer content={activeSection.content} />
+
+              <MarkdownRenderer
+                content={activeSection.content}
+                onNavigate={(tab) => {
+                  if (DOCS_CONTENT[tab]) {
+                    setActiveTab(tab);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+              />
             </article>
 
             {/* Footer Navigation */}
@@ -191,7 +202,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-4">
-                <button 
+                <button
                   className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                   title="Share this page"
                 >
@@ -206,7 +217,7 @@ const App: React.FC = () => {
         <aside className="hidden xl:block w-72 p-12 sticky top-16 h-fit">
           <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Quick Actions</h4>
           <div className="space-y-4">
-            <button 
+            <button
               onClick={() => setIsAiAssistantOpen(true)}
               className="w-full text-left p-4 rounded-2xl bg-rose-50 border border-rose-100 group hover:bg-rose-100 transition-colors"
             >
@@ -248,18 +259,21 @@ const App: React.FC = () => {
           </div>
           <div className="space-y-3">
             {Object.keys(filteredDocs).length > 0 ? (
-              Object.entries(filteredDocs).map(([key, item]) => (
-                <button 
-                  key={key} 
-                  onClick={() => { setActiveTab(key); setSearchQuery(''); }}
-                  className="w-full text-left p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-2xl group transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon size={18} className="text-slate-400 group-hover:text-rose-500" />
-                    <span className="text-sm font-bold text-slate-700 group-hover:text-rose-900">{item.title}</span>
-                  </div>
-                </button>
-              ))
+              Object.entries(filteredDocs).map(([key, item]: [string, DocSection]) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => { setActiveTab(key); setSearchQuery(''); }}
+                    className="w-full text-left p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-2xl group transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} className="text-slate-400 group-hover:text-rose-500" />
+                      <span className="text-sm font-bold text-slate-700 group-hover:text-rose-900">{item.title}</span>
+                    </div>
+                  </button>
+                );
+              })
             ) : (
               <div className="text-center py-12">
                 <Search size={48} className="text-slate-200 mx-auto mb-4" />

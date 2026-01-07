@@ -4,9 +4,10 @@ import { Copy, Check, Quote, Square, CheckSquare } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;
+  onNavigate?: (tab: string) => void;
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate }) => {
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
 
   const handleCopy = (text: string, index: number) => {
@@ -21,12 +22,21 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     let currentCodeBlock: string[] | null = null;
     let currentTable: string[][] | null = null;
     let currentCodeLanguage = '';
+    let currentList: { type: 'ul' | 'ol'; items: { content: string; value?: string }[] } | null = null;
+
+    const flushList = () => {
+      if (currentList) {
+        blocks.push(currentList);
+        currentList = null;
+      }
+    };
 
     lines.forEach((line) => {
       const trimmed = line.trim();
 
       // Handle Code Blocks
       if (trimmed.startsWith('```')) {
+        flushList();
         if (currentCodeBlock) {
           blocks.push({ type: 'code', content: currentCodeBlock.join('\n'), language: currentCodeLanguage });
           currentCodeBlock = null;
@@ -45,6 +55,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
 
       // Handle Tables
       if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        flushList();
         const row = line.split('|').filter((cell, idx, arr) => {
           if (idx === 0 || idx === arr.length - 1) return false;
           return true;
@@ -65,38 +76,57 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         currentTable = null;
       }
 
-      // Handle Other Elements
-      if (trimmed.startsWith('# ')) {
-        blocks.push({ type: 'h1', content: trimmed.replace('# ', '') });
-      } else if (trimmed.startsWith('## ')) {
-        blocks.push({ type: 'h2', content: trimmed.replace('## ', '') });
-      } else if (trimmed.startsWith('### ')) {
-        blocks.push({ type: 'h3', content: trimmed.replace('### ', '') });
-      } else if (trimmed.startsWith('#### ')) {
-        blocks.push({ type: 'h4', content: trimmed.replace('#### ', '') });
-      } else if (trimmed.startsWith('##### ')) {
-        blocks.push({ type: 'h5', content: trimmed.replace('##### ', '') });
-      } else if (trimmed.startsWith('###### ')) {
-        blocks.push({ type: 'h6', content: trimmed.replace('###### ', '') });
-      } else if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
-        blocks.push({ type: 'hr' });
-      } else if (trimmed.startsWith('> ')) {
-        blocks.push({ type: 'blockquote', content: trimmed.replace('> ', '') });
-      } else if (trimmed.startsWith('- [ ] ')) {
-        blocks.push({ type: 'task', content: trimmed.replace('- [ ] ', ''), completed: false });
-      } else if (trimmed.startsWith('- [x] ')) {
-        blocks.push({ type: 'task', content: trimmed.replace('- [x] ', ''), completed: true });
+      // Handle Lists
+      if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('- [] ') || trimmed.startsWith('- [x] ')) {
+        flushList();
+        const completed = trimmed.startsWith('- [x] ');
+        blocks.push({ type: 'task', content: trimmed.replace(/- \[[ x]?\] /i, ''), completed });
       } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('+ ')) {
-        blocks.push({ type: 'li', content: trimmed.replace(/^[-*+]\s+/, '') });
+        const content = trimmed.replace(/^[-*+]\s+/, '');
+        if (currentList && currentList.type === 'ul') {
+          currentList.items.push({ content });
+        } else {
+          flushList();
+          currentList = { type: 'ul', items: [{ content }] };
+        }
       } else if (trimmed.match(/^\d+\.\s+/)) {
-        blocks.push({ type: 'ol', content: trimmed.replace(/^\d+\.\s+/, '') });
-      } else if (trimmed !== '') {
-        blocks.push({ type: 'p', content: trimmed });
+        const match = trimmed.match(/^(\d+)\.\s+/);
+        const value = match ? match[1] : undefined;
+        const content = trimmed.replace(/^\d+\.\s+/, '');
+        if (currentList && currentList.type === 'ol') {
+          currentList.items.push({ content, value });
+        } else {
+          flushList();
+          currentList = { type: 'ol', items: [{ content, value }] };
+        }
       } else {
-        blocks.push({ type: 'space' });
+        flushList();
+        // Handle Other Elements
+        if (trimmed.startsWith('# ')) {
+          blocks.push({ type: 'h1', content: trimmed.replace('# ', '') });
+        } else if (trimmed.startsWith('## ')) {
+          blocks.push({ type: 'h2', content: trimmed.replace('## ', '') });
+        } else if (trimmed.startsWith('### ')) {
+          blocks.push({ type: 'h3', content: trimmed.replace('### ', '') });
+        } else if (trimmed.startsWith('#### ')) {
+          blocks.push({ type: 'h4', content: trimmed.replace('#### ', '') });
+        } else if (trimmed.startsWith('##### ')) {
+          blocks.push({ type: 'h5', content: trimmed.replace('##### ', '') });
+        } else if (trimmed.startsWith('###### ')) {
+          blocks.push({ type: 'h6', content: trimmed.replace('###### ', '') });
+        } else if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+          blocks.push({ type: 'hr' });
+        } else if (trimmed.startsWith('> ')) {
+          blocks.push({ type: 'blockquote', content: trimmed.replace('> ', '') });
+        } else if (trimmed !== '') {
+          blocks.push({ type: 'p', content: trimmed });
+        } else {
+          blocks.push({ type: 'space' });
+        }
       }
     });
 
+    flushList();
     if (currentTable) {
       blocks.push({ type: 'table', content: currentTable });
     }
@@ -106,6 +136,28 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
 
   const blocks = parseBlocks(content);
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest('a');
+    if (anchor && onNavigate) {
+      const href = anchor.getAttribute('href');
+      if (href) {
+        // Handle internal .md links
+        if (href.endsWith('.md') || href.includes('./')) {
+          e.preventDefault();
+          const tabName = href.split('/').pop()?.replace('.md', '').toLowerCase();
+          if (tabName) onNavigate(tabName);
+        }
+        // Handle hash links
+        else if (href.startsWith('#')) {
+          e.preventDefault();
+          const id = href.slice(1);
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  };
+
   const processInlineMarkdown = (text: string) => {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-bold">$1</strong>')
@@ -113,12 +165,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       .replace(/__(.*?)__/g, '<strong class="text-slate-900 font-bold">$1</strong>')
       .replace(/_(.*?)_/g, '<em class="italic">$1</em>')
       .replace(/~~(.*?)~~/g, '<del class="line-through text-slate-400">$1</del>')
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-rose-500 hover:underline font-medium">$1</a>')
-      .replace(/`(.*?)`/g, '<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-rose-500 hover:underline font-medium">$1</a>')
+      .replace(/`(.*?)`/g, '<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+      // Handle navigation paths like "Menu" → "Submenu"
+      .replace(/"([^"]+)"/g, '<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[13px] font-semibold mx-0.5 shadow-sm">$1</span>')
+      .replace(/→/g, '<span class="text-slate-400 mx-1 font-light">→</span>');
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={handleLinkClick}>
       {blocks.map((block, i) => {
         if (block.type === 'space') return <div key={i} className="h-2" />;
 
@@ -171,12 +226,24 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           );
         }
 
-        if (block.type === 'li') {
-          return <li key={i} className="ml-6 list-disc text-slate-600 my-2 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />;
+        if (block.type === 'ul') {
+          return (
+            <ul key={i} className="ml-6 list-disc space-y-2 my-4">
+              {block.items.map((item: any, idx: number) => (
+                <li key={idx} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(item.content) }} />
+              ))}
+            </ul>
+          );
         }
 
         if (block.type === 'ol') {
-          return <li key={i} className="ml-6 list-decimal text-slate-600 my-2 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />;
+          return (
+            <ol key={i} className="ml-6 list-decimal space-y-2 my-4">
+              {block.items.map((item: any, idx: number) => (
+                <li key={idx} value={item.value} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(item.content) }} />
+              ))}
+            </ol>
+          );
         }
 
         if (block.type === 'table') {
