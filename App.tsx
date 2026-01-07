@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [activeHeaders, setActiveHeaders] = useState<{ id: string; text: string; level: number }[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +35,15 @@ const App: React.FC = () => {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleHeaderClick = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const yOffset = -80;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   const filteredDocs = useMemo<DocsContent>(() => {
@@ -204,6 +214,7 @@ const App: React.FC = () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
+                onHeadersFound={setActiveHeaders}
               />
             </article>
 
@@ -256,18 +267,24 @@ const App: React.FC = () => {
                 Get instant answers to complex setup questions using our AI assistant.
               </p>
             </button>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <h5 className="font-bold text-slate-900 text-sm mb-3">On this page</h5>
-              <ul className="space-y-3 text-xs text-slate-500">
-                <li className="flex items-center gap-2 text-rose-500 font-bold">
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  Overview
-                </li>
-                <li className="hover:text-slate-900 cursor-pointer pl-3.5 transition-colors font-medium">What's included</li>
-                <li className="hover:text-slate-900 cursor-pointer pl-3.5 transition-colors font-medium">Tech stack</li>
-                <li className="hover:text-slate-900 cursor-pointer pl-3.5 transition-colors font-medium">Next steps</li>
-              </ul>
-            </div>
+
+            {activeHeaders.length > 0 && (
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col max-h-[calc(85vh-250px)]">
+                <h5 className="font-bold text-slate-900 text-sm mb-3 shrink-0">On this page</h5>
+                <ul className="space-y-3 text-xs text-slate-500 overflow-y-auto pr-2 custom-scrollbar">
+                  {activeHeaders.map((header) => (
+                    <li
+                      key={header.id}
+                      onClick={() => handleHeaderClick(header.id)}
+                      className={`hover:text-rose-500 cursor-pointer transition-colors font-medium break-words ${header.level === 3 ? 'pl-4' : ''
+                        }`}
+                    >
+                      {header.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </aside>
       </div>

@@ -5,10 +5,21 @@ import { Copy, Check, Quote, Square, CheckSquare } from 'lucide-react';
 interface MarkdownRendererProps {
   content: string;
   onNavigate?: (tab: string) => void;
+  onHeadersFound?: (headers: { id: string; text: string; level: number }[]) => void;
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate, onHeadersFound }) => {
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (onHeadersFound) {
+      const blocks = parseBlocks(content);
+      const headers = blocks
+        .filter(b => b.type === 'h2' || b.type === 'h3')
+        .map(b => ({ id: b.id, text: b.content, level: b.type === 'h2' ? 2 : 3 }));
+      onHeadersFound(headers);
+    }
+  }, [content, onHeadersFound]);
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
