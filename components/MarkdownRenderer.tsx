@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Copy, Check, Quote, Square, CheckSquare } from 'lucide-react';
+import { Copy, Check, Quote, Square, CheckSquare, Link as LinkIcon } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;
@@ -10,6 +9,7 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate, onHeadersFound }) => {
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
+  const [activeAnchor, setActiveAnchor] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (onHeadersFound) {
@@ -25,6 +25,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleCopyAnchor = (id: string) => {
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    navigator.clipboard.writeText(url);
+    setActiveAnchor(id);
+    setTimeout(() => setActiveAnchor(null), 2000);
   };
 
   const slugify = (text: string) => {
@@ -190,6 +197,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
   };
 
   const processInlineMarkdown = (text: string) => {
+    const extLinkIcon = '<svg class="inline-block ml-1 w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
+    const mailIcon = '<svg class="inline-block ml-1 w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>';
+
     return text
       // Handle navigation paths like "Menu" → "Submenu" first
       .replace(/"([^"]+)"/g, '<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[13px] font-semibold mx-0.5 shadow-sm">$1</span>')
@@ -199,40 +209,62 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
       .replace(/_(.*?)_/g, '<em class="italic">$1</em>')
       .replace(/~~(.*?)~~/g, '<del class="line-through text-slate-400">$1</del>')
       // Standard Markdown Links [text](url)
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-rose-500 hover:underline font-medium">$1</a>')
-      // Auto-link raw URLs (that aren't already part of an <a> tag)
-      .replace(/(?<!href=")(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-rose-500 hover:underline font-medium">$1</a>')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-rose-600 hover:underline font-semibold">$1</a>')
+      // Auto-link raw URLs with premium highlighting
+      .replace(/(?<!href=")(https?:\/\/[^\s<]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold bg-rose-50/50 hover:bg-rose-100/50 px-1.5 py-0.5 rounded-md transition-all border border-rose-100/50">$1${extLinkIcon}</a>`)
+      // Auto-link Emails with premium highlighting
+      .replace(/(?<!href=")([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, `<a href="mailto:$1" class="inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold bg-rose-50/50 hover:bg-rose-100/50 px-1.5 py-0.5 rounded-md transition-all border border-rose-100/50">$1${mailIcon}</a>`)
       .replace(/`(.*?)`/g, '<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
       .replace(/→/g, '<span class="text-slate-400 mx-1 font-light">→</span>');
+  };
+
+  const renderHeading = (level: number, block: any, i: number) => {
+    const styles = {
+      1: "text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight",
+      2: "text-3xl font-bold text-slate-900 mt-10 mb-5 tracking-tight",
+      3: "text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight",
+      4: "text-xl font-bold text-slate-800 mt-6 mb-3 tracking-tight",
+      5: "text-lg font-bold text-slate-800 mt-4 mb-2 tracking-tight",
+      6: "text-base font-bold text-slate-700 mt-4 mb-2 tracking-tight uppercase tracking-wider"
+    }[level as 1 | 2 | 3 | 4 | 5 | 6];
+
+    const anchorButton = (
+      <button
+        onClick={() => handleCopyAnchor(block.id)}
+        className="opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-rose-500 relative"
+        title="Copy section link"
+      >
+        {activeAnchor === block.id ? (
+          <Check size={16} className="text-emerald-500" />
+        ) : (
+          <LinkIcon size={16} />
+        )}
+        {activeAnchor === block.id && (
+          <span className="absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded whitespace-nowrap">
+            Copied!
+          </span>
+        )}
+      </button>
+    );
+
+    switch (level) {
+      case 1: return <h1 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h1>;
+      case 2: return <h2 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h2>;
+      case 3: return <h3 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h3>;
+      case 4: return <h4 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h4>;
+      case 5: return <h5 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h5>;
+      case 6: return <h6 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h6>;
+      default: return null;
+    }
   };
 
   return (
     <div className="space-y-4" onClick={handleLinkClick}>
       {blocks.map((block, i) => {
         if (block.type === 'space') return <div key={i} className="h-2" />;
-
-        if (block.type === 'h1') {
-          return <h1 key={i} id={block.id} className="text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight">{block.content}</h1>;
-        }
-
-        if (block.type === 'h2') {
-          return <h2 key={i} id={block.id} className="text-3xl font-bold text-slate-900 mt-10 mb-5 tracking-tight">{block.content}</h2>;
-        }
-
-        if (block.type === 'h3') {
-          return <h3 key={i} id={block.id} className="text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight">{block.content}</h3>;
-        }
-
-        if (block.type === 'h4') {
-          return <h4 key={i} id={block.id} className="text-xl font-bold text-slate-800 mt-6 mb-3 tracking-tight">{block.content}</h4>;
-        }
-
-        if (block.type === 'h5') {
-          return <h5 key={i} id={block.id} className="text-lg font-bold text-slate-800 mt-4 mb-2 tracking-tight">{block.content}</h5>;
-        }
-
-        if (block.type === 'h6') {
-          return <h6 key={i} id={block.id} className="text-base font-bold text-slate-700 mt-4 mb-2 tracking-tight uppercase tracking-wider">{block.content}</h6>;
+        if (block.type.startsWith('h')) {
+          const level = parseInt(block.type.substring(1));
+          return renderHeading(level, block, i);
         }
 
         if (block.type === 'hr') {

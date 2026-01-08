@@ -10,7 +10,9 @@ import {
   Layout,
   Clock,
   HelpCircle,
-  ArrowUp
+  ArrowUp,
+  Link as LinkIcon,
+  Check
 } from 'lucide-react';
 import { DOCS_CONTENT, APP_VERSION, DEMO_URL, SUPPORT_EMAIL } from './constants';
 import { DocsContent, DocSection } from './types';
@@ -25,6 +27,9 @@ const App: React.FC = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeHeaders, setActiveHeaders] = useState<{ id: string; text: string; level: number }[]>([]);
   const [activeSectionId, setActiveSectionId] = useState<string>('');
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
+  const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
   const sidebarScrollRef = React.useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -39,6 +44,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 400);
+
+      // Calculate reading progress
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      setReadingProgress(progress);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -97,6 +107,11 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-rose-100 selection:text-rose-900">
       {/* Top Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        {/* Reading Progress Bar */}
+        <div
+          className="absolute bottom-0 left-0 h-[2px] bg-rose-500 transition-all duration-150 ease-out z-50"
+          style={{ width: `${readingProgress}%` }}
+        />
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -301,10 +316,28 @@ const App: React.FC = () => {
 
             {activeHeaders.length > 0 && (
               <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col max-h-[calc(85vh-250px)] shadow-sm">
-                <h5 className="font-bold text-slate-900 text-[10px] uppercase tracking-widest mb-4 shrink-0 flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-rose-500" />
-                  On this page
-                </h5>
+                <div className="flex items-center justify-between mb-4 shrink-0">
+                  <h5 className="font-bold text-slate-900 text-[10px] uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-rose-500" />
+                    On this page
+                  </h5>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      setActiveAnchor('page');
+                      setTimeout(() => setActiveAnchor(null), 2000);
+                    }}
+                    className="text-slate-400 hover:text-rose-500 transition-colors relative"
+                    title="Copy page link"
+                  >
+                    {activeAnchor === 'page' ? <Check size={14} className="text-emerald-500" /> : <LinkIcon size={14} />}
+                    {activeAnchor === 'page' && (
+                      <span className="absolute right-0 bottom-full mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded whitespace-nowrap">
+                        Copied!
+                      </span>
+                    )}
+                  </button>
+                </div>
                 <div className="relative overflow-hidden">
                   {/* Progress Line */}
                   <div className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-slate-200" />
@@ -400,6 +433,47 @@ const App: React.FC = () => {
             Back to Top
             <div className="absolute top-full right-6 -mt-1 border-4 border-transparent border-t-slate-900" />
           </div>
+        </div>
+      </div>
+
+      {/* Mobile TOC Floating Button */}
+      {activeHeaders.length > 0 && (
+        <button
+          onClick={() => setIsMobileTocOpen(true)}
+          className="xl:hidden fixed bottom-8 left-8 p-4 bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 z-40 hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-2"
+        >
+          <Menu size={20} className="text-rose-500" />
+          <span className="text-xs font-bold uppercase tracking-wider">On this page</span>
+        </button>
+      )}
+
+      {/* Mobile TOC Bottom Sheet */}
+      <div className={`xl:hidden fixed inset-0 z-[100] transition-all duration-500 ${isMobileTocOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileTocOpen(false)} />
+        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-[32px] p-8 transition-transform duration-500 shadow-2xl ${isMobileTocOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+          <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8" />
+          <div className="flex items-center justify-between mb-6">
+            <h5 className="font-bold text-slate-900 text-lg">On this page</h5>
+            <button onClick={() => setIsMobileTocOpen(false)} className="p-2 bg-slate-100 rounded-full text-slate-500">
+              <X size={20} />
+            </button>
+          </div>
+          <ul className="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+            {activeHeaders.map((header) => (
+              <li
+                key={header.id}
+                onClick={() => {
+                  handleHeaderClick(header.id);
+                  setIsMobileTocOpen(false);
+                }}
+                className={`flex items-center gap-4 text-sm transition-colors ${activeSectionId === header.id ? 'text-rose-600 font-bold' : 'text-slate-600 font-medium'
+                  } ${header.level === 3 ? 'pl-6 opacity-80' : ''}`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${activeSectionId === header.id ? 'bg-rose-500' : 'bg-slate-200'}`} />
+                {header.text}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
