@@ -804,35 +804,862 @@ You're now ready to start customizing and building your property rental app.
     icon: Settings,
     tags: ["env", "api", "stripe"],
     content: `
-# Configuration Guide
+# Configuration Guide - BookHere Mobile App
 
-The \`app.json\` and \`.env\` files are your main configuration hubs.
+Complete configuration guide for setting up and customizing BookHere mobile application.
 
-### App Identity
-Update your app name and bundle identifiers in \`app.json\`:
+---
+
+## Table of Contents
+
+1. [App Configuration](#app-configuration)
+2. [Backend Integration](#backend-integration)
+3. [Google Services Setup](#google-services-setup)
+4. [Payment Gateway Configuration](#payment-gateway-configuration)
+5. [Push Notifications Setup](#push-notifications-setup)
+6. [Authentication Configuration](#authentication-configuration)
+7. [Maps Configuration](#maps-configuration)
+8. [App Branding](#app-branding)
+9. [Build Configuration](#build-configuration)
+10. [Environment Variables](#environment-variables)
+
+---
+
+## App Configuration
+
+### 1. Basic App Settings (app.json)
+
+The \`app.json\` file is the main configuration file for your Expo/React Native app.
+
+#### Update App Identity
+
 \`\`\`json
 {
   "expo": {
-    "name": "Your Brand Name",
-    "slug": "your-app-slug",
-    "ios": { "bundleIdentifier": "com.yourname.app" },
-    "android": { "package": "com.yourname.app" }
+    "name": "Your App Name",           // Display name
+    "slug": "your-app-slug",            // URL-friendly name
+    "version": "1.0.0",                 // App version
+    "orientation": "portrait",          // Screen orientation
+    "userInterfaceStyle": "automatic",  // Light/dark mode support
+
+    "icon": "./src/assets/images/icon.png",  // App icon (1024x1024px)
+
+    "splash": {
+      "image": "./src/assets/book-here-splash-screen/4.jpg",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    }
   }
 }
 \`\`\`
 
-### Environment Variables
-Create a \`.env\` file in the root directory:
-\`\`\`env
-API_URL=https://your-wordpress-site.com/wp-json/homey-api/v1
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-GOOGLE_MAPS_API_KEY=AIza...
+#### Update Bundle Identifiers
+
+**For iOS:**
+\`\`\`json
+{
+  "expo": {
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.yourapp",
+      "buildNumber": "1"
+    }
+  }
+}
 \`\`\`
 
-### External Services
-- **Google Maps:** Required for property locations and interactive maps.
-- **Stripe:** Required for secure booking payments.
-- **Firebase:** Highly recommended for Push Notifications and Analytics.
+**For Android:**
+\`\`\`json
+{
+  "expo": {
+    "android": {
+      "package": "com.yourcompany.yourapp",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    }
+  }
+}
+\`\`\`
+
+**Important:**
+- Bundle identifier and package name must be unique (use your domain reversed)
+- Format: \`com.yourcompany.appname\`
+- Once published, cannot be changed
+- Must match identifiers in Google Cloud Console and Apple Developer Account
+
+#### Update App Scheme
+
+\`\`\`json
+{
+  "expo": {
+    "scheme": "yourapp"  // Deep linking scheme
+  }
+}
+\`\`\`
+
+This enables deep linking: \`yourapp://screen/details\`
+
+---
+
+## Backend Integration
+
+### 1. Configure API URL
+
+Edit \`src/ApiUrl.js\`:
+
+\`\`\`javascript
+export default {
+    api_url: "https://yourdomain.com/"
+}
+\`\`\`
+
+  ** Important Notes:**
+    - Must be HTTPS in production
+      - Must end with trailing slash\`/\`
+        - Should be your WordPress site URL
+          - Test the URL in browser first
+
+            ** Example:**
+              \`\`\`javascript
+// Development
+api_url: "https://dev.bookhere.com/"
+
+// Production
+api_url: "https://bookhere.com/"
+\`\`\`
+
+### 2. Backend API Requirements
+
+Your WordPress backend must have these endpoints:
+
+#### Authentication Endpoints
+  \`\`\`
+POST /wp-json/jwt-auth/v1/token
+POST /wp-json/jwt-auth/v1/token/validate
+POST /wp-json/jwt-auth/v1/user/register
+\`\`\`
+
+#### Property / Listing Endpoints
+  \`\`\`
+GET  /wp-json/jwt-auth/v1/homey/search
+GET  /wp-json/jwt-auth/v1/listing/{id}
+POST /wp-json/jwt-auth/v1/listing/add
+PUT  /wp-json/jwt-auth/v1/listing/{id}
+DELETE /wp-json/jwt-auth/v1/listing/{id}
+\`\`\`
+
+#### Booking Endpoints
+  \`\`\`
+GET  /wp-json/jwt-auth/v1/booking/list
+POST /wp-json/jwt-auth/v1/booking/create
+PUT  /wp-json/jwt-auth/v1/booking/{id}
+\`\`\`
+
+#### Message Endpoints
+  \`\`\`
+GET  /wp-json/jwt-auth/v1/messages
+POST /wp-json/jwt-auth/v1/messages/send
+\`\`\`
+
+### 3. CORS Configuration
+
+If you encounter CORS errors, add to your WordPress \`wp-config.php\`:
+
+\`\`\`php
+// Enable CORS for mobile app
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Credentials: true');
+\`\`\`
+
+Or use a plugin like "WP CORS" for easier management.
+
+### 4. Test Backend Connection
+
+  \`\`\`bash
+# Test API is accessible
+curl https://yourdomain.com/wp-json/
+
+# Test authentication endpoint
+curl -X POST https://yourdomain.com/wp-json/jwt-auth/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"testpass"}'
+\`\`\`
+
+---
+
+## Google Services Setup
+
+### 1. Google Cloud Console Configuration
+
+#### Create Project
+1. Go to https://console.cloud.google.com/
+2. Create new project: "BookHere"(or your app name)
+3. Note the Project ID
+
+#### Enable Required APIs
+
+Enable these APIs in "APIs & Services" → "Library":
+
+- ✅ Maps SDK for Android
+  - ✅ Maps SDK for iOS
+    - ✅ Places API
+      - ✅ Geocoding API
+        - ✅ Geolocation API
+
+#### Create API Key for Maps
+
+1. Go to "Credentials" → "Create Credentials" → "API Key"
+2. Name: "Google Maps API Key"
+3. Click "Edit API key"
+4. Under "API restrictions", select:
+- Maps SDK for Android
+  - Maps SDK for iOS
+    - Places API
+    - Geocoding API
+5.(Optional) Add application restrictions for security
+6. Copy the API key
+
+### 2. Google Sign - In Setup
+
+#### Configure OAuth Consent Screen
+
+1. Go to "OAuth consent screen"
+2. Select "External"(or "Internal" if G Suite)
+3. Fill required fields:
+\`\`\`
+   App name: BookHere
+   User support email: support@yourdomain.com
+   Developer contact: dev@yourdomain.com
+   \`\`\`
+4. Add scopes(optional):
+- \`userinfo.email\`
+  - \`userinfo.profile\`
+5. Save
+
+#### Create OAuth 2.0 Credentials
+
+  ** iOS Client ID:**
+    1. "Create Credentials" → "OAuth 2.0 Client ID"
+2. Application type: ** iOS **
+  3. Name: "BookHere iOS"
+4. Bundle ID: \`com.yourcompany.yourapp\`(same as app.json)
+5. Click "Create"
+6. Copy the ** Client ID **
+
+** Web Client ID(required for Google Sign - In):**
+  1. "Create Credentials" → "OAuth 2.0 Client ID"
+2. Application type: ** Web application **
+  3. Name: "BookHere Web"
+4. No need to add URIs
+5. Click "Create"
+6. Copy the ** Client ID **
+
+** Android(Automatic):**
+  - Google Sign - In library handles this automatically
+    - Uses SHA - 1 fingerprint from your keystore
+
+### 3. Update App Configuration
+
+#### Update \`.env\`:
+\`\`\`env
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=YOUR_IOS_CLIENT_ID_HERE.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID_HERE.apps.googleusercontent.com
+\`\`\`
+
+#### Update \`app.json\`:
+\`\`\`json
+{
+  "expo": {
+    "ios": {
+      "config": {
+        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+      },
+      "bundleIdentifier": "com.yourcompany.yourapp",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      },
+      "package": "com.yourcompany.yourapp",
+      "googleServicesFile": "./google-services.json"
+    }
+  }
+}
+\`\`\`
+
+### 4. Google Services Files(Optional - For Firebase)
+
+  ** For iOS ** - \`GoogleService-Info.plist\`:
+1. Go to https://console.firebase.google.com
+2. Create project or use existing
+3. Add iOS app with your bundle ID
+4. Download\`GoogleService-Info.plist\`
+5. Place in project root
+6. Reference in \`app.json\` as shown above
+
+  ** For Android ** - \`google-services.json\`:
+1. In same Firebase project
+2. Add Android app with your package name
+3. Download\`google-services.json\`
+4. Place in project root
+5. Reference in \`app.json\` as shown above
+
+---
+
+## Payment Gateway Configuration
+
+### 1. Stripe Configuration
+
+#### Get Stripe Keys
+
+1. Sign up at https://stripe.com
+2. Go to Developers → API keys
+3. Copy keys:
+   - ** Test Publishable Key **: \`pk_test_...\`
+  - ** Test Secret Key **: \`sk_test_...\`
+    - ** Live Publishable Key **: \`pk_live_...\`
+      - ** Live Secret Key **: \`sk_live_...\`
+
+#### Configure in App
+
+Edit \`src/screens/payment/stripe/config/helpers.ts\`:
+
+\`\`\`typescript
+// For Development (Test Mode)
+const publishableKey = "pk_test_YOUR_TEST_KEY_HERE";
+
+// For Production (Live Mode)
+// const publishableKey = "pk_live_YOUR_LIVE_KEY_HERE";
+
+export const initializeStripe = () => {
+  return initStripe({
+    publishableKey,
+    merchantIdentifier: "merchant.com.yourcompany.yourapp", // For Apple Pay
+    urlScheme: "yourapp", // Same as app.json scheme
+  });
+};
+\`\`\`
+
+#### Apple Pay Configuration(iOS)
+
+1. Create Merchant ID in Apple Developer Console:
+- Go to Certificates, IDs & Profiles → Identifiers
+  - Click + → Merchant IDs
+    - Register: \`merchant.com.yourcompany.yourapp\`
+
+2. Enable in Stripe Dashboard:
+- Go to Settings → Payment Methods
+  - Enable Apple Pay
+    - Add domain verification
+
+3. Update \`app.json\`:
+\`\`\`json
+{
+  "expo": {
+    "ios": {
+      "entitlements": {
+        "com.apple.developer.in-app-payments": [
+          "merchant.com.yourcompany.yourapp"
+        ]
+      }
+    }
+  }
+}
+\`\`\`
+
+#### Google Pay Configuration(Android)
+
+1. Enable in Stripe Dashboard:
+- Go to Settings → Payment Methods
+  - Enable Google Pay
+
+2. No additional app configuration needed
+
+#### Webhook Setup(Backend)
+
+Configure Stripe webhooks in your WordPress backend:
+\`\`\`
+Webhook URL: https://yourdomain.com/wp-json/stripe/webhook
+Events to listen: payment_intent.succeeded, payment_intent.payment_failed
+\`\`\`
+
+### 2. PayPal Configuration
+
+Edit PayPal component file:
+
+\`\`\`javascript
+const PayPalButton = () => {
+  return (
+    <PayPalButtons
+      createOrder={(data, actions) => {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: "AMOUNT_HERE",
+              currency_code: "USD"
+            }
+          }]
+        });
+      }}
+      onApprove={(data, actions) => {
+        // Handle successful payment
+      }}
+    />
+  );
+};
+\`\`\`
+
+### 3. Thai QR Payment
+
+Configure in the Thai QR payment component with your QR payment provider credentials.
+
+---
+
+## Push Notifications Setup
+
+### 1. Expo Push Notifications
+
+#### Configure in \`app.json\`:
+
+\`\`\`json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/icon.png",
+          "defaultChannel": "default",
+          "sounds": []
+        }
+      ]
+    ]
+  }
+}
+\`\`\`
+
+### 2. iOS Push Notifications(APNs)
+
+1. ** Create APNs Key in Apple Developer Console:**
+  - Go to Certificates, IDs & Profiles → Keys
+    - Click + to create new key
+      - Enable "Apple Push Notifications service (APNs)"
+        - Download the \`.p8\` key file
+          - Note the Key ID
+
+2. ** Upload to Expo:**
+  \`\`\`bash
+   eas credentials
+   \`\`\`
+   Follow prompts to upload APNs key
+
+### 3. Android Push Notifications(FCM)
+
+1. ** Get Server Key from Firebase:**
+  - Go to Firebase Console
+    - Project Settings → Cloud Messaging
+      - Copy "Server key"
+
+2. ** Configure in Expo:**
+  \`\`\`bash
+   eas credentials
+   \`\`\`
+   Follow prompts to add FCM server key
+
+### 4. Test Push Notifications
+
+Use Expo's push notification tool:
+  \`\`\`bash
+expo push:send --to YOUR_EXPO_PUSH_TOKEN --title "Test" --body "Hello!"
+\`\`\`
+
+---
+
+## Authentication Configuration
+
+### 1. JWT Token Configuration
+
+The app uses JWT tokens for authentication.Ensure your WordPress backend has JWT Authentication plugin configured.
+
+In WordPress \`wp-config.php\`:
+\`\`\`php
+define('JWT_AUTH_SECRET_KEY', 'your-secret-key-here-change-this');
+define('JWT_AUTH_CORS_ENABLE', true);
+\`\`\`
+
+### 2. Biometric Authentication
+
+Already configured via plugin in \`app.json\`:
+
+\`\`\`json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID for secure login."
+        }
+      ]
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Allow BookHere to use Face ID for secure login."
+      }
+    },
+    "android": {
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
+    }
+  }
+}
+\`\`\`
+
+### 3. Session Management
+
+Configure token expiration in your backend:
+\`\`\`php
+// Token expires in 7 days
+define('JWT_AUTH_EXPIRE_TIME', 7 * DAY_IN_SECONDS);
+\`\`\`
+
+---
+
+## Maps Configuration
+
+### 1. Google Maps API Key
+
+Already covered in Google Services Setup.Key should be in \`app.json\`:
+
+\`\`\`json
+{
+  "expo": {
+    "ios": {
+      "config": {
+        "googleMapsApiKey": "YOUR_API_KEY"
+      }
+    },
+    "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_API_KEY"
+        }
+      }
+    }
+  }
+}
+\`\`\`
+
+### 2. Map Customization
+
+Edit map styles in the code:
+
+\`\`\`javascript
+// Custom map style (optional)
+const mapStyle = [
+  {
+    "featureType": "poi",
+    "elementType": "labels",
+    "stylers": [{ "visibility": "off" }]
+  }
+];
+
+<MapView
+  customMapStyle={mapStyle}
+  // other props
+/>
+\`\`\`
+
+### 3. Default Map Region
+
+Configure default map region in code:
+
+\`\`\`javascript
+const defaultRegion = {
+  latitude: 37.78825,      // Your default latitude
+  longitude: -122.4324,    // Your default longitude
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};
+\`\`\`
+
+---
+
+## App Branding
+
+### 1. App Name
+
+Update in multiple locations:
+
+** \`app.json\`:**
+  \`\`\`json
+{
+  "expo": {
+    "name": "Your App Name"
+  }
+}
+\`\`\`
+
+  ** \`package.json\`:**
+    \`\`\`json
+{
+  "name": "yourappname"
+}
+\`\`\`
+
+### 2. App Icon
+
+1. Create 1024x1024px PNG icon
+2. Replace\`src/assets/images/icon.png\`
+3. Icon should have:
+- No transparency(use background)
+  - No rounded corners(iOS handles this)
+    - High resolution
+      - Simple, recognizable design
+
+### 3. Splash Screen
+
+1. Create splash screen image(recommended: 2048x2048px)
+2. Replace\`src/assets/book-here-splash-screen/4.jpg\`
+3. Update \`app.json\`:
+
+\`\`\`json
+{
+  "expo": {
+    "splash": {
+      "image": "./src/assets/book-here-splash-screen/4.jpg",
+      "resizeMode": "cover",        // or "contain"
+      "backgroundColor": "#ffffff"  // background color
+    }
+  }
+}
+\`\`\`
+
+### 4. Theme Colors
+
+Edit \`src/constants/Colors.ts\`:
+
+\`\`\`typescript
+export default {
+  primary: '#YOUR_PRIMARY_COLOR',
+  secondary: '#YOUR_SECONDARY_COLOR',
+  light: {
+    background: '#FFFFFF',
+    text: '#000000',
+    // ... other light theme colors
+  },
+  dark: {
+    background: '#000000',
+    text: '#FFFFFF',
+    // ... other dark theme colors
+  }
+}
+\`\`\`
+
+---
+
+## Build Configuration
+
+### 1. EAS Build Configuration(\`eas.json\`)
+
+  \`\`\`json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+\`\`\`
+
+### 2. Android Build Settings
+
+For smaller APK size, ProGuard is already configured in:
+\`android/gradle.properties\`
+
+### 3. iOS Build Settings
+
+Build number increments automatically with EAS.Manual control in \`app.json\`:
+
+\`\`\`json
+{
+  "expo": {
+    "ios": {
+      "buildNumber": "1"
+    }
+  }
+}
+\`\`\`
+
+---
+
+## Environment Variables
+
+### Development vs Production
+
+Create multiple \`.env\` files:
+
+** \`.env.development\`:**
+  \`\`\`env
+API_URL=https://dev.yourapp.com/
+STRIPE_KEY=pk_test_xxx
+DEBUG_MODE=true
+\`\`\`
+
+  ** \`.env.production\`:**
+    \`\`\`env
+API_URL=https://yourapp.com/
+STRIPE_KEY=pk_live_xxx
+DEBUG_MODE=false
+\`\`\`
+
+### Loading Environment Variables
+
+In code:
+\`\`\`javascript
+import Constants from 'expo-constants';
+
+const config = {
+  apiUrl: Constants.expoConfig.extra.apiUrl,
+  // other config
+};
+\`\`\`
+
+Update \`app.json\`:
+\`\`\`json
+{
+  "expo": {
+    "extra": {
+      "apiUrl": process.env.API_URL
+    }
+  }
+}
+\`\`\`
+
+---
+
+## Configuration Checklist
+
+Before going to production:
+
+** App Identity:**
+  - [] App name updated
+    - [] Bundle identifier / package name set
+      - [] Version number correct
+        - [] App icon replaced
+          - [] Splash screen customized
+
+            ** Backend:**
+              - [] API URL configured
+                - [] Backend accessible via HTTPS
+                  - [] CORS configured
+                    - [] Test authentication working
+
+                      ** Google Services:**
+                        - [] Google Maps API key added
+                          - [] Maps displaying correctly
+                            - [] Google Sign - In client IDs configured
+                              - [] Google Sign - In tested
+
+                                ** Payments:**
+                                  - [] Stripe keys configured
+                                    - [] Test payment successful
+                                      - [] PayPal configured(if using)
+  - [] Apple Pay merchant ID set(if using)
+
+** Push Notifications:**
+  - [] Expo push notification token working
+    - [] APNs configured for iOS
+      - [] FCM configured for Android
+        - [] Test notification received
+
+          ** Branding:**
+            - [] Theme colors customized
+              - [] App name throughout app
+                - [] Logo / branding updated
+
+                  ** Build:**
+                    - [] EAS project ID set
+                      - [] Build profiles configured
+                        - [] Test build successful
+
+---
+
+## Testing Configuration
+
+### Test API Connection
+  \`\`\`bash
+# In app, check console for API calls
+# Look for successful responses
+\`\`\`
+
+### Test Google Maps
+  - Open app
+    - Navigate to map screen
+      - Verify maps load
+
+### Test Google Sign - In
+  - Click "Sign in with Google"
+    - Verify successful authentication
+
+### Test Payments
+  - Use Stripe test cards:
+- Success: \`4242 4242 4242 4242\`
+  - Decline: \`4000 0000 0000 0002\`
+
+### Test Push Notifications
+  - Send test notification
+    - Verify receipt on device
+
+---
+
+## Need Help ?
+
+  If configuration issues arise:
+
+1. Check error messages in console
+2. Verify all IDs match across platforms
+3. Ensure URLs are correct with HTTPS
+4. Review this guide carefully
+5. Contact support: support @webpenter.com
+
+---
+
+** Configuration Complete! ** 🎉
+
+Your app is now fully configured and ready for customization and deployment.
+
     `
   },
   customization: {
@@ -1747,23 +2574,797 @@ Transform BookHere into your unique property rental brand!
     icon: HelpCircle,
     tags: ["help", "qa", "rtl"],
     content: `
-# Frequently Asked Questions
+# Frequently Asked Questions (FAQ)
 
-**Q: Does it support RTL (Arabic/Urdu)?**
-A: Yes! Version 3.0.0 includes full RTL support and translations for 10 languages including Arabic, Hebrew, and Persian.
+Common questions and answers about the BookHere mobile app.
 
-**Q: Can I run this without the Homey Theme?**
-A: No. The app is specifically architected to work with the Homey WordPress Theme ecosystem. It relies on the theme's custom post types and API structure.
+---
 
-**Q: Is Dark Mode supported?**
-A: Yes, the app supports automatic switching between light and dark modes based on system settings, or manual override in user preferences.
+## Table of Contents
 
-**Q: How do I update to a new version?**
-A: 
-1. Backup your \`Colors.ts\`, \`app.json\`, and \`.env\`.
-2. Download the new version.
-3. Run \`npm install\` to update dependencies.
-4. Re-apply your branding and keys.
+1. [General Questions](#general-questions)
+2. [Installation & Setup](#installation--setup)
+3. [Configuration](#configuration)
+4. [Features & Functionality](#features--functionality)
+5. [Customization](#customization)
+6. [Payments & Billing](#payments--billing)
+7. [Deployment & Building](#deployment--building)
+8. [Support & Licensing](#support--licensing)
+
+---
+
+## General Questions
+
+### What is BookHere?
+
+BookHere is a complete, production-ready React Native mobile application for property rentals and bookings. It's similar to Airbnb and includes features for both property guests and hosts.
+
+### What platforms does BookHere support?
+
+- **iOS**: iOS 12.0 and higher
+- **Android**: Android 5.0 (API 21) and higher
+
+### Do I need a backend to use this app?
+
+Yes, BookHere requires a WordPress backend with the Homey theme installed. The app communicates with the backend via REST API endpoints.
+
+### Is the source code included?
+
+Yes, you receive the complete React Native source code that you can modify and customize.
+
+### Can I use this for my commercial project?
+
+Yes, with the appropriate ThemeForest license (Regular or Extended), you can use this in your commercial projects.
+
+### What technologies is this built with?
+
+- **React Native** 0.79.5
+- **Expo** SDK 53
+- **TypeScript** 5.8.3
+- **React Navigation** 6.x
+- **React Native Paper** 4.12.8
+
+---
+
+## Backend & Infrastructure
+
+### Is a backend included with this purchase?
+
+**Partially!** The **connector plugin is included**, but you need to purchase the backend theme separately.
+
+**What's Included:**
+- ✅ BookHere-Homey Connector Plugin (bridges app with Homey theme)
+- ✅ Mobile-optimized REST API endpoints
+- ✅ Easy installation & configuration guide
+- ✅ Saves you 40-80 hours of custom API development!
+
+**What's NOT Included (Must Purchase Separately):**
+- ❌ Homey WordPress Theme (~$59-79 from ThemeForest)
+  - This provides the actual backend (property management, bookings, etc.)
+  - Our plugin connects your mobile app to it
+
+### What backend do I need?
+
+**You need two things:**
+
+1. **Homey WordPress Theme** (Purchase separately)
+   - Cost: ~$59-79 on ThemeForest
+   - Search "Homey" on ThemeForest.net
+   - Provides complete property rental backend functionality
+
+2. **WordPress Installation** (Free)
+   - WordPress 6.0+ from WordPress.org
+   - Web hosting with PHP & MySQL ($5-20/month)
+
+**Our Included Connector Plugin:**
+- Bridges mobile app with Homey theme
+- Provides mobile-optimized API endpoints
+- Handles authentication, data sync, push notifications
+- Easy to install and configure
+
+### Do I need to buy the Homey theme?
+
+**YES!** ✅ Homey theme is required for the backend.
+
+**Why Homey Theme is Needed:**
+- Provides the property management system
+- Handles bookings and reservations
+- Manages payments and transactions
+- Includes admin dashboard for hosts
+- Search and filtering system
+- User management
+
+**What Our Included Plugin Does:**
+- Connects your mobile app to Homey
+- Provides mobile-optimized APIs
+- Handles mobile-specific features
+- You DON'T need to build custom APIs yourself (saves 40-80 hours!)
+
+**Total Cost:**
+- BookHere package: (your purchase)
+- Homey theme: ~$59-79 (one-time)
+- Web hosting: $5-20/month
+
+### What exactly is the BookHere API Plugin?
+
+It's a complete WordPress plugin (included in your purchase) that provides:
+
+**Technical Features:**
+- JWT authentication endpoints
+- Property CRUD operations (Create, Read, Update, Delete)
+- Booking management system
+- Payment gateway webhooks (Stripe, PayPal)
+- Real-time messaging backend
+- Review & rating system
+- Advanced search with filters
+- User role management (Guest/Host/Admin)
+- Earnings calculation & analytics
+- Media upload handling
+- Push notification integration
+
+**User-Friendly:**
+- Simple installation via WordPress admin
+- Configuration wizard for easy setup
+- Admin dashboard to manage everything
+- Compatible with standard WordPress hosting
+
+### How long does backend setup take?
+
+**Super Fast!** ⚡
+
+With our included plugin:
+1. Install WordPress: 10 minutes (most hosts have 1-click install)
+2. Upload our API plugin: 2 minutes
+3. Activate & configure: 15 minutes
+4. Connect mobile app: 5 minutes
+
+**Total: 30-45 minutes** ✅
+
+Compare this to building a custom backend: 40-80 hours!
+
+### What hosting do I need?
+
+Any standard WordPress hosting works! No special requirements.
+
+**Recommended Hosting Providers:**
+- **Shared Hosting** ($5-15/month): SiteGround, Bluehost, HostGator
+  - Perfect for starting out
+  - Handles 1,000-10,000 users easily
+
+- **Managed WordPress** ($20-50/month): WP Engine, Kinsta, Flywheel
+  - Better performance
+  - Automatic backups & updates
+
+- **VPS** ($20-50/month): DigitalOcean, Linode, Vultr
+  - More control
+  - Better for scaling
+
+- **Cloud** ($10-100/month): AWS, Google Cloud, Azure
+  - Maximum scalability
+  - Pay for what you use
+
+**For most users:** Start with shared hosting ($5-15/month). Upgrade later if needed.
+
+### What's the total cost to get started?
+
+**Complete breakdown:**
+
+**One-time costs:**
+- BookHere package (mobile app + connector plugin): (your purchase) ✅
+- **Homey WordPress theme: $59-79** (required - purchase from ThemeForest)
+- Domain name: $10-15/year (optional)
+- SSL certificate: FREE (Let's Encrypt) ✅
+
+**Monthly costs:**
+- Web hosting: $5-20/month (shared hosting works fine)
+- Transaction fees: 2.9% + $0.30 per booking (Stripe, when you start earning)
+
+**Total first year:** Your purchase + $59-79 (theme) + $60-240 (hosting) = ~$119-319 total
+
+**What You Save:**
+- ✅ 40-80 hours of custom API development (would cost $2,000-4,000!)
+- ✅ Mobile app development (would cost $8,000-15,000!)
+- ✅ Our connector plugin makes integration seamless
+
+**Compared to building from scratch:** You save $10,000-19,000!
+
+### Can I use my existing WordPress website?
+
+**Yes!** Absolutely!
+
+If you already have a WordPress website:
+1. Simply install our API plugin
+2. Configure the plugin settings
+3. Connect the mobile app
+4. Your existing website continues working normally
+
+The API plugin doesn't interfere with your website. It just adds API endpoints for the mobile app.
+
+### What if I already have a property rental website (non-WordPress)?
+
+You have options:
+
+**Option 1: Use our WordPress plugin (Easiest)**
+- Set up WordPress on a subdomain (e.g., api.yoursite.com)
+- Install our plugin
+- Mobile app connects to this subdomain
+- Your main website stays unchanged
+
+**Option 2: Build custom integration (Advanced)**
+- Modify the mobile app to work with your existing API
+- Requires development skills
+- API documentation provided
+
+**Option 3: Hybrid approach**
+- Use our WordPress backend for mobile app
+- Keep your existing website for web users
+- Sync data between both (requires custom integration)
+
+### Do I need technical skills to set up the backend?
+
+**No! Basic WordPress knowledge is enough.**
+
+If you can:
+- ✅ Install WordPress (or use 1-click installer)
+- ✅ Upload a plugin via WordPress admin
+- ✅ Fill out a settings form
+- ✅ Copy-paste a URL
+
+Then you can set up the backend! 🎉
+
+**We provide:**
+- Step-by-step installation guide with screenshots
+- Configuration wizard in the plugin
+- Video tutorial (coming soon)
+- Email support if you get stuck
+
+### Can I test the app without setting up hosting?
+
+**Demo Options:**
+
+1. **Use local WordPress** (Fastest for testing)
+   - Install XAMPP or MAMP on your computer (free)
+   - Run WordPress locally
+   - Install our plugin
+   - Test app connecting to localhost
+   - Takes 30 minutes to set up
+
+2. **Use free hosting temporarily**
+   - 000webhost.com, InfinityFree (free tier)
+   - Install WordPress + our plugin
+   - Test before buying paid hosting
+
+3. **Request demo access**
+   - Email support@webpenter.com with purchase code
+   - We can provide temporary demo backend access
+
+### Can you set up the backend for me?
+
+**DIY (Recommended):** Setup is very easy with our guide
+
+**Professional Setup Services:**
+- Not included in base package
+- Available as paid service: Email support@webpenter.com for quote
+- Typical cost: $50-150 for complete setup
+- Includes: WordPress installation, plugin configuration, app connection
+
+**Freelancer Setup:**
+- Any WordPress freelancer can help
+- Should take them 30-60 minutes
+- Provide them with our installation guide
+
+### What happens if my backend is down?
+
+**Mobile app shows error messages** and can't function until backend is back online.
+
+**Prevent downtime:**
+- Choose reliable hosting (99.9%+ uptime SLAs)
+- Set up automatic backups (most hosts include this)
+- Use monitoring service (free): UptimeRobot.com
+- Keep WordPress & plugin updated
+
+**Most shared hosting providers** have 99.9% uptime = less than 9 hours downtime per year.
+
+### Is the plugin compatible with my WordPress theme?
+
+**Yes!** The API plugin is backend-only and works with ANY WordPress theme.
+
+**Compatible with:**
+- ✅ Any WordPress theme (default themes, premium themes, custom themes)
+- ✅ Page builders (Elementor, WPBakery, Divi, etc.)
+- ✅ WooCommerce (if you want e-commerce features)
+- ✅ Multilingual plugins (WPML, Polylang)
+- ✅ Most popular WordPress plugins
+
+The API plugin provides REST endpoints. It doesn't affect your WordPress frontend/theme at all.
+
+---
+
+## Installation & Setup
+
+### How long does installation take?
+
+Basic installation takes 15-30 minutes. Complete setup with backend configuration and third-party services can take 2-4 hours.
+
+### Do I need a Mac to develop this app?
+
+- **For iOS development**: Yes, macOS is required for iOS builds and testing
+- **For Android only**: No, you can develop on Windows, Mac, or Linux
+
+### What if I don't have React Native experience?
+
+Basic knowledge of React Native and JavaScript is recommended. However, we provide comprehensive documentation to help you get started.
+
+### Can I test the app without building it?
+
+Yes, use Expo Go app to test on physical devices during development without building.
+
+### Do I need paid developer accounts?
+
+- **For testing**: No
+- **For App Store submission**: Yes, Apple Developer ($99/year)
+- **For Play Store submission**: Yes, Google Play Developer ($25 one-time)
+
+### Installation fails with "Cannot find module" errors
+
+This usually means dependencies weren't installed correctly:
+\`\`\`bash
+rm - rf node_modules package-lock.json
+npm install
+  \`\`\`
+
+---
+
+## Configuration
+
+### Where do I configure the backend URL?
+
+Edit \`src / ApiUrl.js\`:
+\`\`\`javascript
+export default {
+  api_url: "https://yourdomain.com/"
+}
+  \`\`\`
+
+### How do I get Google Maps API key?
+
+1. Go to https://console.cloud.google.com/
+2. Create a project
+3. Enable Maps SDK for iOS and Android
+4. Create credentials → API Key
+5. Add to \`app.json\`
+
+### Where do I put my Stripe keys?
+
+Edit \`src/screens/payment/stripe/config/helpers.ts\` and update the \`publishableKey\` constant.
+
+### How do I change the app name?
+
+Update in multiple locations:
+- \`app.json\` - \`expo.name\`
+- \`package.json\` - \`name\` field
+- Throughout the app code (search and replace)
+
+### Can I use a different backend instead of WordPress?
+
+Technically yes, but you'll need to modify the API integration code to match your backend's API endpoints. This requires intermediate to advanced development skills.
+
+### How do I configure push notifications?
+
+1. Create Expo account
+2. Get your project ID from expo.dev
+3. Add to \`app.json\` under \`extra.eas.projectId\`
+4. For iOS: Configure APNs
+5. For Android: Configure FCM (usually automatic)
+
+---
+
+## Features & Functionality
+
+### Does it support multiple languages?
+
+Yes, 10 languages are included:
+- English, Spanish, Portuguese, French, German
+- Russian, Chinese, Arabic (RTL), Urdu (RTL), Hindi
+
+### Can I add more languages?
+
+Yes! Create a new translation file in \`src/localization/translations/\` and register it in the i18n configuration.
+
+### Does it support dark mode?
+
+Yes, automatic dark mode is fully supported based on device settings.
+
+### Can users book properties instantly?
+
+Yes, the app includes instant booking functionality with payment processing.
+
+### Is messaging real-time?
+
+The app supports messaging between guests and hosts. Real-time updates depend on your backend implementation.
+
+### Can hosts add properties from the mobile app?
+
+Yes, hosts can add and manage properties using a 7-step wizard directly from the app.
+
+### Does it support multiple payment methods?
+
+Yes, included payment methods:
+- Stripe (Credit/Debit cards)
+- PayPal
+- Thai QR Payment
+
+### How does the favorites/wishlist work?
+
+Users can save properties to their favorites list for quick access later. Favorites are synced with the backend.
+
+### Is there a review/rating system?
+
+Yes, guests can leave reviews and ratings for properties they've stayed at.
+
+---
+
+## Customization
+
+### How do I change the color scheme?
+
+Edit \`src/constants/Colors.ts\` and update the primary, secondary, and other color values.
+
+### Can I change the app icon and splash screen?
+
+Yes:
+- **Icon**: Replace \`src/assets/images/icon.png\` (1024x1024px)
+- **Splash**: Replace \`src/assets/book-here-splash-screen/4.jpg\`
+
+### How do I add custom fonts?
+
+1. Add font files to \`src/assets/fonts/\`
+2. Load fonts in \`App.tsx\` using \`useFonts\`
+3. Update \`Typography.ts\` with font names
+4. Use in StyleSheets
+
+### Can I modify the UI components?
+
+Yes, all components are customizable. Edit files in \`src/components/\` and \`src/screens/\`.
+
+### How do I add a new screen/page?
+
+1. Create component in \`src/screens/\`
+2. Add to navigation in \`src/navigation/\`
+3. Configure navigation options
+
+### Can I remove features I don't need?
+
+Yes, you can remove unused features by:
+- Removing screen components
+- Updating navigation
+- Removing dependencies (if applicable)
+
+### Is the code documented?
+
+Yes, the code includes comments and the documentation package provides comprehensive guides.
+
+---
+
+## Payments & Billing
+
+### Is Stripe the only payment option?
+
+No, PayPal and Thai QR payment are also included. You can add more payment gateways by integrating their SDKs.
+
+### Do I need a Stripe account?
+
+Yes, if you want to accept credit/debit card payments. Create a free account at https://stripe.com
+
+### How do I test payments without real money?
+
+Use Stripe test mode with test card numbers:
+- Success: \`4242 4242 4242 4242\`
+- Decline: \`4000 0000 0000 0002\`
+
+### Does the app handle payment processing fees?
+
+The app displays prices and processes payments. Stripe charges transaction fees (usually 2.9% + $0.30 per transaction).
+
+### Can I use this in my country?
+
+The app works globally. Check if Stripe and your chosen payment gateways support your country.
+
+### How are host payouts handled?
+
+The app includes a wallet/earnings dashboard for hosts. You'll need to implement the actual payout logic in your backend.
+
+---
+
+## Deployment & Building
+
+### How do I build the app for production?
+
+Using EAS Build:
+\`\`\`bash
+# iOS
+eas build --platform ios --profile production
+
+# Android
+eas build --platform android --profile production
+  \`\`\`
+
+### Do I need a Mac to build for iOS?
+
+No, EAS Build (Expo's cloud build service) can build iOS apps from any platform.
+
+### How do I submit to App Store?
+
+\`\`\`bash
+eas submit --platform ios
+  \`\`\`
+Follow Apple's guidelines and provide required assets (screenshots, descriptions, etc.)
+
+### How do I submit to Play Store?
+
+\`\`\`bash
+eas submit --platform android
+  \`\`\`
+Provide required Play Store assets and information.
+
+### How long does App Store review take?
+
+- **Apple**: Usually 1-3 days
+- **Google**: Usually 1-2 days (sometimes hours)
+
+### Can I update the app after it's published?
+
+Yes, you can push updates using:
+- **EAS Update**: For JavaScript/React changes (instant)
+- **New Build**: For native code changes (requires store review)
+
+### What's the difference between APK and AAB?
+
+- **APK**: Android Package, for direct installation and testing
+- **AAB**: Android App Bundle, required for Play Store (Google generates optimized APKs)
+
+### Why is my app size so large?
+
+Check \`APK_SIZE_OPTIMIZATION_GUIDE.md\` for tips on reducing app size. The app is already optimized to 30-40MB per architecture.
+
+---
+
+## Support & Licensing
+
+### What support is included?
+
+- 6 months of support from purchase date
+- Bug fixes and issue resolution
+- Installation and configuration help
+- General usage questions
+
+### What's NOT included in support?
+
+- Custom development or new features
+- Third-party service setup (beyond guidance)
+- Server/hosting management
+- App Store submission process
+
+### How do I contact support?
+
+Email: support@webpenter.com
+
+Include:
+- Your purchase code
+- Detailed issue description
+- Screenshots/error messages
+- Steps to reproduce
+
+### What's the difference between Regular and Extended License?
+
+**Regular License:**
+- Use in one project
+- End users charged once or free
+
+**Extended License:**
+- Use in SaaS/subscription products
+- End users charged on recurring basis
+
+See: https://themeforest.net/licenses
+
+### Can I get a refund?
+
+Per ThemeForest policy, refunds are only granted if the item doesn't work as described or has major issues.
+
+### Can I hire you for custom development?
+
+Yes, contact us at support@webpenter.com for a quote on custom work.
+
+### Will this work with the latest React Native version?
+
+The app uses React Native 0.79.5. Upgrading to newer versions may require code changes. We provide updates to support new RN versions.
+
+### Is WordPress Homey theme included?
+
+No, the Homey WordPress theme must be purchased separately from ThemeForest.
+
+### Can I use a different WordPress theme?
+
+You'd need to modify the API integration to match your theme's API endpoints. This requires development work.
+
+---
+
+## Technical Questions
+
+### Why can't I see Google Maps?
+
+Common causes:
+1. API key not configured in \`app.json\`
+2. Maps SDK not enabled in Google Cloud Console
+3. Billing not enabled on Google Cloud project
+4. Wrong API key or restrictions
+
+### Google Sign-In isn't working
+
+Check:
+1. Client IDs configured in \`.env\`
+2. Bundle ID/package matches Google Cloud Console
+3. App rebuilt after changing \`.env\`
+
+### App crashes on startup
+
+Try:
+1. Clear cache: \`npm start --clear\`
+2. Reinstall dependencies: \`rm - rf node_modules && npm install\`
+3. Check console for error messages
+
+### Images not uploading
+
+Verify:
+1. Backend API endpoint is correct
+2. File size limits on server
+3. Proper permissions in app
+4. Network connectivity
+
+### How do I enable debug mode?
+
+\`\`\`bash
+# React Native debugger
+npm start
+# Then press 'j' for JavaScript debugger
+\`\`\`
+
+### Can I use with Expo Go?
+
+For development testing, yes. However, some native features may not work in Expo Go. Use development builds for full testing.
+
+### How do I update dependencies?
+
+\`\`\`bash
+# Check for updates
+npm outdated
+
+# Update specific package
+npm update package - name
+
+# Update all(carefully!)
+npm update
+  \`\`\`
+
+**Note:** Major updates may require code changes.
+
+---
+
+## Best Practices
+
+### Should I modify the core files?
+
+It's better to:
+- Create new components for custom features
+- Use configuration files for settings
+- Document your changes
+
+### How do I keep my customizations when updating?
+
+- Use version control (Git)
+- Create custom components separately
+- Document changes in your own files
+- Merge updates carefully
+
+### What should I test before launching?
+
+- [ ] All screens navigate correctly
+- [ ] Backend API connection works
+- [ ] Login/signup functional
+- [ ] Property search works
+- [ ] Booking flow complete
+- [ ] Payment processing successful
+- [ ] Notifications working
+- [ ] Images upload properly
+- [ ] Both iOS and Android
+- [ ] Light and dark modes
+- [ ] Multiple languages
+- [ ] Different screen sizes
+
+---
+
+## Troubleshooting Quick Fixes
+
+### Build fails
+
+\`\`\`bash
+# Clear everything and rebuild
+rm -rf node_modules ios/build android/build
+npm install
+  \`\`\`
+
+### Metro bundler errors
+
+\`\`\`bash
+npm start --clear
+  \`\`\`
+
+### iOS build issues
+
+\`\`\`bash
+cd ios
+rm -rf build
+pod deintegrate
+pod install
+cd..
+\`\`\`
+
+### Android build issues
+
+\`\`\`bash
+cd android
+./gradlew clean
+cd..
+\`\`\`
+
+### Environment changes not reflecting
+
+\`\`\`bash
+# Clear cache
+npm start --clear
+
+# Rebuild app
+eas build --platform all --profile development
+  \`\`\`
+
+---
+
+## Still Have Questions?
+
+If your question isn't answered here:
+
+1. **Check Documentation:**
+   - INSTALLATION
+   - CONFIGURATION
+   - CUSTOMIZATION
+   - TROUBLESHOOTING
+
+2. **Search Error Messages:**
+   - Google the exact error
+   - Check Stack Overflow
+   - Search React Native docs
+
+3. **Contact Support:**
+   - Email: support@webpenter.com
+   - Include purchase code
+   - Provide detailed information
+
+---
+
+## Useful Resources
+
+- **React Native Docs**: https://reactnative.dev/docs/getting-started
+- **Expo Docs**: https://docs.expo.dev/
+- **React Navigation**: https://reactnavigation.org/docs/getting-started
+- **Stripe Docs**: https://stripe.com/docs/payments
+- **Google Maps**: https://developers.google.com/maps/documentation
+
+---
+
+**Need More Help?**
+
+Don't hesitate to reach out to our support team at support@webpenter.com with your purchase code.
+
     `
   },
   security: {
