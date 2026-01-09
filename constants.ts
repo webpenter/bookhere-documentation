@@ -20,7 +20,7 @@ export const DOCS_CONTENT: DocsContent = {
     icon: Book,
     tags: ["welcome", "overview", "stack"],
     content: `
-# Welcome to BookHere v3.0.0
+# Welcome to BookHere v3.0.1
 
 Thank you for choosing BookHere, the premium property rental mobile application. This documentation will guide you through setting up your own marketplace.
 
@@ -9960,6 +9960,6 @@ For security concerns: security@webpenter.com
   },
 };
 
-export const APP_VERSION = "v3.0.0";
+export const APP_VERSION = "v3.0.1";
 export const SUPPORT_EMAIL = "support@webpenter.com";
 export const DEMO_URL = "https://demo.bookhere.app";

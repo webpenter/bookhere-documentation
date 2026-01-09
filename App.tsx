@@ -145,15 +145,21 @@ const App: React.FC = () => {
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <div className="flex items-center gap-3">
-              <div className="bg-rose-500 p-2 rounded-xl shadow-lg shadow-rose-200">
-                <Layout className="text-white" size={24} />
+            <button
+              onClick={() => {
+                setActiveTab('getting_started');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex items-center">
+                <img src="./assets/logo.png" alt="BookHere Logo" className="w-12 h-12 object-contain" />
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden sm:block text-left">
                 <h1 className="font-extrabold text-slate-900 text-xl tracking-tight leading-none">BookHere</h1>
                 <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">Documentation Hub {APP_VERSION}</p>
               </div>
-            </div>
+            </button>
           </div>
 
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
