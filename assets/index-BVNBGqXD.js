@@ -458,7 +458,7 @@ BookHere is a full-featured peer-to-peer property rental mobile application buil
 - Optional feature (can be disabled)
 
 **Implementation:**
-- Uses \`expo - local - authentication\` package
+- Uses \`expo-local-authentication\` package
 - Hardware security module integration
 - Encrypted credential storage
 
@@ -758,9 +758,9 @@ BookHere is a full-featured peer-to-peer property rental mobile application buil
 - Always visible during scroll
 
 **API Endpoints:**
-- \`GET/wp-json/jwt-auth/v1/listing/list_detail?list_id=\${id}\` - Get property details
-- \`GET/wp-json/jwt-auth/v1/listing/get_reviews?listing_id=\${id}\` - Get reviews
-- \`POST/wp-json/jwt-auth/v1/listing/favorite\` - Add to favorites
+- \`GET /wp-json/jwt-auth/v1/listing/list_detail?list_id=\${id}\` - Get property details
+- \`GET /wp-json/jwt-auth/v1/listing/get_reviews?listing_id=\${id}\` - Get reviews
+- \`POST /wp-json/jwt-auth/v1/listing/favorite\` - Add to favorites
 
 ---
 
@@ -826,8 +826,8 @@ BookHere is a full-featured peer-to-peer property rental mobile application buil
 7. If declined, search other properties
 
 **Host Actions:**
-- Approve request → Renter gets notification → Payment required
-- Decline request → Renter gets notification → No charge
+- "Approve request" → "Renter gets notification" → "Payment required"
+- "Decline request" → "Renter gets notification" → "No charge"
 
 **Timeout:**
 - Request expires after 24 hours
@@ -1131,7 +1131,7 @@ BookHere is a full-featured peer-to-peer property rental mobile application buil
 
 ### Payment Process
 
-  ** Step - by - Step:**
+  ** Step-by-Step:**
 
     1. ** Booking Initiation **
       - Select property and dates
@@ -1164,7 +1164,7 @@ BookHere is a full-featured peer-to-peer property rental mobile application buil
         - Invoice generated
 
           ** Pricing Breakdown:**
-            \`\`\`
+            \`\`\`Pricing Breakdown
 Base price:        $100 × 3 nights = $300
 Cleaning fee:                         $50
 Service fee:                          $30
@@ -1192,7 +1192,7 @@ Total:                               $418
 
 ### Chat System
 
-  ** Location:** Messages tab(bottom navigation)
+  ** Location:** Messages tab (bottom navigation)
 
     ** Features:**
 
@@ -1221,12 +1221,12 @@ Total:                               $418
               - Online status
                 - Profile photo
                   - "i" info button
-                    - Call / video buttons(future)
+                    - Call / video buttons (future)
 
 2. ** Message Display **
   - Chronological order
-    - Sent messages(right)
-      - Received messages(left)
+    - Sent messages (right)
+      - Received messages (left)
         - Message timestamp
           - Read receipts
             - Delivery status
@@ -1250,8 +1250,8 @@ Total:                               $418
               1. ** Text Messages **
                 - Plain text
                   - Emojis
-                  - URLs(auto - detected)
-                  - Mentions
+                    - URLs (auto-detected)
+                      - Mentions
 
 2. ** Media Messages **
   - Photos(up to 10MB)
@@ -1300,7 +1300,7 @@ Total:                               $418
       - Special requests
 
 3. ** Post - Booking **
-  - Check -in confirmation
+  - Check-in confirmation
   - Issues reporting
     - Review reminders
 
@@ -1319,49 +1319,49 @@ Total:                               $418
 
 ---
 
-## Property Management(Hosts)
+## Property Management (Hosts)
 
 ### Add New Listing
 
-  ** Location:** More → Add New Listing
+  ** Location:** "More" → "Add New Listing"
 
     ** Process:** 11 - step wizard
 
 #### Step 1: Property Basics
 
   ** Information:**
-    - Property title(required)
-      - Property type:
-- Apartment
-  - House
-  - Villa
-  - Hotel
-  - Unique stay
-    - Condo
-    - Townhouse
-    - Guest house
-      - Listing type:
-- Entire place
-  - Private room
-    - Shared room
-      - Property description(min 50 characters)
+    - Property Title (required)
+      - Property Type:
+        - Apartment
+          - House
+            - Villa
+              - Hotel
+                - Unique stay
+                  - Condo
+                    - Townhouse
+                      - Guest house
+                        - Listing type:
+                          - Entire place
+                            - Private room
+                              - Shared room
+                                - Property description(min 50 characters)
 
         ** Fields:**
           - Text input for title
-            - Dropdown for property type
+            - Dropdown for property type  
               - Radio buttons for listing type
                 - Multiline text area for description
 
 #### Step 2: Location Details
 
   ** Information:**
-    - Country(dropdown)
-    - State / Province(dropdown)
-    - City(text input)
-    - Address(text input)
-    - Zip / Postal code
-      - Neighborhood(optional)
-      - GPS coordinates(optional)
+    - Country (dropdown)
+      - State / Province (dropdown)
+        - City (text input)
+          - Address (text input)
+            - Zip / Postal code
+              - Neighborhood (optional)
+                - GPS coordinates (optional)
 
         ** Interactive Map:**
           - Drag marker to exact location
@@ -1380,7 +1380,7 @@ Total:                               $418
             - Drag to reorder
               - Set cover photo
 
-                ** Video Upload(Optional):**
+                ** Video Upload (Optional):**
                   - Property tour video
                     - Maximum 100MB
                       - Supported formats: MP4, MOV
@@ -1403,7 +1403,7 @@ Total:                               $418
   ** Categories:**
 
 ** 1. Essentials:**
-  - WiFi(speed selection)
+  - WiFi (speed selection)
   - Air conditioning
     - Heating
     - Kitchen or kitchenette
@@ -1461,7 +1461,7 @@ Total:                               $418
 #### Step 5: Accommodations
 
   ** Guest Capacity:**
-    - Maximum guests(number picker)
+    - Maximum guests (number picker)
       - Maximum adults
         - Maximum children
           - Maximum infants
@@ -1471,7 +1471,7 @@ Total:                               $418
 
 ** Bedrooms(add multiple):**
   - Bedroom 1:
-- Bed type(King, Queen, Double, Single)
+- Bed Type (King, Queen, Double, Single)
   - Number of beds
     - Bedroom 2: (same)
       - Add more bedrooms
@@ -1492,16 +1492,16 @@ Total:                               $418
 #### Step 6: Pricing Details
 
   ** Base Pricing:**
-    - Price per night(required)
+    - Price per night (required)
       - Currency selection
-        - Weekend pricing(optional)
+        - Weekend pricing (optional)
           - Monthly discount(%)
             - Weekly discount(%)
 
               ** Additional Fees:**
-                - Cleaning fee(one - time)
-                  - Extra guest fee(per person)
-                    - Security deposit(optional)
+                - Cleaning fee (one - time)
+                  - Extra guest fee (per person)
+                    - Security deposit (optional)
 
                       ** Custom Periods:**
                         - Add seasonal rates
@@ -1513,13 +1513,13 @@ Total:                               $418
                                   ** Pricing Rules:**
                                     - Minimum nights stay
                                       - Maximum nights stay
-                                        - Preparation time(days between bookings)
+                                        - Preparation time (days between bookings)
 
 #### Step 7: Availability
 
   ** Calendar Settings:**
-    - Available from(date)
-      - Available until(date)
+    - Available from (date)
+      - Available until (date)
         - Block specific dates
           - Set as unavailable
 
@@ -1527,7 +1527,7 @@ Total:                               $418
             - Minimum advance notice
               - Maximum advance notice
                 - Booking window
-                  - Check -in cutoff time
+                  - Check-in cutoff time
 
                     ** Calendar Sync:** (future feature)
 - Import from Airbnb
@@ -1537,18 +1537,18 @@ Total:                               $418
 #### Step 8: Policies & Rules
 
   ** House Rules:**
-    - No smoking(toggle)
-      - No pets(toggle)
-        - No parties / events(toggle)
-          - No children(toggle)
-            - Quiet hours(time range)
-              - Custom rules(text input)
+    - No smoking (toggle)
+      - No pets (toggle)
+        - No parties / events (toggle)
+          - No children (toggle)
+            - Quiet hours (time range)
+              - Custom rules (text input)
 
-                ** Check -in/Check-out:**
-                - Check -in from(time)
-                - Check -in until(time)
-                - Check - out time
-                  - Self check -in available
+                ** Check-in/Check-out:**
+                - Check-in from (time)
+                - Check-in until (time)
+                - Check-out time
+                  - Self check-in available
                     - Lockbox / keypad code
 
                       ** Cancellation Policy:**
@@ -1652,7 +1652,7 @@ Total:                               $418
 
 ### Edit Listing
 
-  ** Accessible from:** My Listings → Edit
+  ** Accessible from:** "My Listings" → "Edit"
 
     ** Editable Sections:**
       - All 11 steps from creation
@@ -1680,7 +1680,7 @@ Total:                               $418
 
 ### Wallet Overview
 
-  ** Location:** Drawer menu → Wallet
+  ** Location:** "Drawer menu" → "Wallet"
 
     ** Dashboard Sections:**
 
@@ -1705,7 +1705,7 @@ Total:                               $418
 
 ### Earnings
 
-  ** Location:** Wallet → Earnings tab
+  ** Location:** "Wallet" → "Earnings tab"
 
     ** Display:**
       - Earnings list
@@ -1720,8 +1720,8 @@ Total:                               $418
           - Booking ID
             - Property name
               - Guest name
-                - Check -in date
-                - Check - out date
+                - Check-in date
+                - Check-out date
                   - Nights count
                     - Gross amount
                       - Platform fee
@@ -1729,7 +1729,7 @@ Total:                               $418
                           - Payout status
 
                             ** Earnings Breakdown:**
-                              \`\`\`
+                              \`\`\`Earnings Breakdown
 Booking Amount:              $400
 Service Fee (15%):           -$60
 Transaction Fee:              -$5
@@ -1738,10 +1738,10 @@ Your Earnings:               $335
 \`\`\`
 
                               ** Status Badges:**
-                                - Pending(awaiting check - out)
-                                - Available(ready for payout)
-  - Processing(payout requested)
-    - Paid(received)
+                                - Pending (awaiting check-out)
+                                - Available (ready for payout)
+  - Processing (payout requested)
+    - Paid (received)
 
     ** API Endpoints:**
       - \`GET /wp-json/jwt-auth/v1/wallet/earnings?user_id=\${id}\` - Get earnings
@@ -1749,7 +1749,7 @@ Your Earnings:               $335
 
 ### Payouts
 
-  ** Location:** Wallet → Payouts tab
+  ** Location:** "Wallet" → "Payouts tab"
 
     ** Payout Methods:**
 
@@ -1758,7 +1758,7 @@ Your Earnings:               $335
           - Account number
             - Account holder name
               - Swift / BIC code
-                - IBAN(for international)
+                - IBAN (for international)
   - Routing number
 
 2. ** PayPal **
@@ -1858,7 +1858,7 @@ Your Earnings:               $335
           - Payment method used
 
             ** Line Items:**
-              \`\`\`
+              \`\`\`Invoice Detail
 Description          Quantity    Price    Total
 ────────────────────────────────────────────────
 Accommodation         3 nights   $100    $300
@@ -1930,7 +1930,7 @@ Taxes                                    $38
                                         ** Verification:**
                                           - Email verification badge
                                             - Phone verification badge
-                                              - ID verification(future)
+                                              - ID verification (future)
                                                 - Trusted user badge
 
 #### 2. Settings Tab
@@ -1965,10 +1965,10 @@ Taxes                                    $38
 
                                             ** Display Settings:**
                                               - Dark mode toggle
-                                                - Language selection(i18n)
-                                                  - Map provider(Google / OSM)
+                                                - Language selection (i18n)
+                                                  - Map provider (Google / OSM)
                                                     - Date format
-                                                      - Distance units(km / miles)
+                                                      - Distance units (km / miles)
 
 #### 3. Bookings Tab
 
@@ -1985,7 +1985,7 @@ Taxes                                    $38
                   - Countries visited
                     - Nights stayed
 
-#### 4. Hosting Tab(Hosts only)
+#### 4. Hosting Tab (Hosts only)
 
   ** Host Profile:**
     - Host since date
@@ -2012,8 +2012,8 @@ Taxes                                    $38
 #### 5. Reviews Tab
 
   ** Reviews About You:**
-    - As a guest(reviews from hosts)
-      - As a host(reviews from guests)
+    - As a guest (reviews from hosts)
+      - As a host (reviews from guests)
         - Overall rating
           - Category ratings
             - Total reviews count
@@ -2025,14 +2025,14 @@ Taxes                                    $38
                       - Review text
                         - Review date
                           - Property name
-                            - Your response(if added)
+                            - Your response (if added)
 
 ** Write Review:**
   - Rate cleanliness
     - Rate accuracy
       - Rate communication
         - Rate location
-          - Rate check -in
+          - Rate check-in
             - Rate value
               - Write review text
                 - Upload photos
@@ -2072,7 +2072,7 @@ Taxes                                    $38
 2. Enter new password
 3. Confirm new password
 4. Save changes
-5. Re - login required
+5. Re-login required
 
   ** Delete Account:**
     1. Confirm deletion request
@@ -2099,7 +2099,7 @@ Taxes                                    $38
 
 ### Favorites Screen
 
-  ** Location:** Drawer menu → Favourites
+  ** Location:** "Drawer menu" → "Favourites"
 
     ** Features:**
 
@@ -2115,17 +2115,17 @@ Taxes                                    $38
                 - Location
                 - Price per night
                   - Rating stars
-                    - Heart icon(filled)
+                    - Heart icon (filled)
 
                       ** Actions:**
                         - View property details
                           - Remove from favorites
                             - Share property
-                              - Create wish list(future)
+                              - Create wish list (future)
 
                                 ** Organization:**
                                   - Default "Favorites" list
-                                    - Create custom lists(future):
+                                    - Create custom lists (future):
 - "Dream destinations"
   - "Summer trips"
   - "Family vacations"
@@ -2150,7 +2150,7 @@ Taxes                                    $38
                           - Heart icon on property cards
                             - Tap to add to favorites
                               - Tap again to remove
-                                - Visual feedback(animation)
+                                - Visual feedback (animation)
                                   - Instant sync to backend
 
 ---
@@ -2173,12 +2173,12 @@ Taxes                                    $38
 #### 2. Category Ratings
 
   ** For Properties:**
-    - Cleanliness(1 - 5 stars)
-    - Accuracy(1 - 5 stars)
-    - Communication(1 - 5 stars)
-    - Location(1 - 5 stars)
-    - Check -in (1 - 5 stars)
-- Value (1-5 stars)
+    - Cleanliness (1 - 5 stars)
+    - Accuracy (1 - 5 stars)
+    - Communication (1 - 5 stars)
+    - Location (1 - 5 stars)
+    - Check-in (1 - 5 stars)
+    - Value (1 - 5 stars)
 
   ** For Guests:**
     - Cleanliness
@@ -2193,7 +2193,7 @@ Taxes                                    $38
         - Optional
 
 #### 4. Photo Upload
-  - Upload review photos(optional)
+  - Upload review photos (optional)
     - Maximum 5 photos
       - Show property condition
         - Visual evidence
@@ -2217,7 +2217,7 @@ Taxes                                    $38
           - Share your experience
             - Be honest and constructive
               - Follow community guidelines
-                - Add photos(optional)
+                - Add photos (optional)
 
                   ** Step 3: Review Privacy **
                     - Choose to publish
@@ -2241,10 +2241,10 @@ Taxes                                    $38
 ### Viewing Reviews
 
   ** On Property Listing:**
-    - Overall rating(large display)
+    - Overall rating (large display)
       - Total review count
         - Category ratings breakdown
-          - Recent reviews(3 - 5)
+          - Recent reviews (3 - 5)
             - "Show all reviews" button
 
               ** Reviews Page:**
@@ -2255,9 +2255,9 @@ Taxes                                    $38
     - Lowest rated
       - Most helpful
         - Filter by:
-- Rating(5, 4, 3, 2, 1 stars)
+- Rating (5, 4, 3, 2, 1 stars)
   - With photos
-    - Guest type(solo, family, couple)
+    - Guest type (solo, family, couple)
 
       ** Review Card:**
         - Reviewer photo
@@ -2280,14 +2280,14 @@ Taxes                                    $38
 
   ** Email Notifications:**
     - New review received
-      - Review reminder(3 days after checkout)
+      - Review reminder (3 days after checkout)
         - Review published
           - Review response received
 
             ** Push Notifications:**
               - New review alert
                 - Review reminder
-                  - Review milestone(10, 50, 100 reviews)
+                  - Review milestone (10, 50, 100 reviews)
 
 ---
 
@@ -2335,18 +2335,18 @@ Taxes                                    $38
         - Custom markers
           - Info windows
             - Route directions
-              - Street view(future)
+              - Street view (future)
 
                 ** Themes:**
-                  - Light theme(default )
-                    - Dark theme(follows app theme)
+                  - Light theme ( default )
+                    - Dark theme ( follows app theme )
                       - Custom styling
 
                         ** Permissions:**
                           - Location permission requested
                             - "While using app" or "Always"
                               - GPS accuracy level
-                                - Background location(optional)
+                                - Background location (optional)
 
                                   ** Location Services:**
 
@@ -2367,7 +2367,7 @@ Taxes                                    $38
 
     ** Directions:**
       - Open in Google Maps
-        - Turn - by - turn navigation
+        - Turn-by-turn navigation
           - Estimated time
             - Multiple routes
 
@@ -2404,8 +2404,8 @@ Taxes                                    $38
     - Booking confirmed
       - Booking request approved
         - Booking request declined
-          - Check -in reminder(1 day before)
-          - Check - out reminder(day of)
+          - Check-in reminder (1 day before)
+          - Check-out reminder (day of)
             - Booking cancelled
 
               ** For Hosts:**
@@ -2416,7 +2416,7 @@ Taxes                                    $38
 
 #### 2. Message Notifications
 
-  ** Real - time:**
+  ** Real-time:**
     - New message received
       - Message delivered
         - Message read
@@ -2489,7 +2489,7 @@ Taxes                                    $38
   ** Preferences:**
     - Enable / disable push notifications
       - Enable / disable email notifications
-        - Enable / disable SMS(OTP only)
+        - Enable / disable SMS (OTP only)
 
           ** Granular Control:**
             - Booking notifications
@@ -2548,8 +2548,8 @@ Taxes                                    $38
 
                 ** Content:**
                   - Property descriptions
-                    - Reviews(not translated)
-                    - Messages(not translated)
+                    - Reviews (not translated)
+                    - Messages (not translated)
                     - Static pages
 
                       ** Dynamic Content:**
@@ -2562,10 +2562,10 @@ Taxes                                    $38
 ### Language Selection
 
   ** Settings Location:**
-    - Profile → Settings → Language
+    - "Profile" → "Settings" → "Language"
 
       ** Options:**
-        - Device language(auto - detect)
+        - Device language (auto - detect)
           - Manual selection
             - Language list with native names
 
