@@ -5,7 +5,11 @@ import {
   Wrench,
   Terminal,
   HelpCircle,
-  ShieldCheck
+  ShieldCheck,
+  Clock,
+  Smartphone,
+  Play,
+  ExternalLink
 } from 'lucide-react';
 import { DocsContent } from './types';
 
@@ -3822,6 +3826,209 @@ For security concerns: security@webpenter.com
 
 
     `
+  },
+  troubleshooting: {
+    title: "Troubleshooting",
+    icon: Wrench,
+    tags: ["help", "fixes", "errors"],
+    content: `
+# Troubleshooting Guide
+
+Common issues and their solutions when setting up or running the BookHere mobile app.
+
+---
+
+## Installation Issues
+
+### npm install fails with errors
+**Problem:** \`npm install\` fails with dependency conflicts or permission errors.
+**Solution:**
+\`\`\`bash
+# Clear npm cache
+npm cache clean --force
+
+# Delete node_modules and package-lock.json
+rm -rf node_modules package-lock.json
+
+# Reinstall
+npm install
+\`\`\`
+
+### "Cannot find module" errors
+**Problem:** The app fails to start with "Cannot find module" errors.
+**Solution:** Ensure all dependencies are installed and the Metro bundler is restarted with a clear cache:
+\`\`\`bash
+npm start --clear
+\`\`\`
+
+### Xcode build fails (iOS)
+**Problem:** Build fails in Xcode with various errors.
+**Solution:**
+1. Open Xcode and "Clean Build Folder" (Product → Clean Build Folder).
+2. Delete Derived Data.
+3. Reinstall pods:
+\`\`\`bash
+cd ios
+pod deintegrate
+pod install
+cd ..
+\`\`\`
+
+---
+
+## Runtime Issues
+
+### App shows blank white screen
+**Problem:** The app loads but only shows a white screen.
+**Solution:** This is often a bundle error. Restart the development server with a clear cache:
+\`\`\`bash
+npm start --clear
+\`\`\`
+
+### "Network request failed"
+**Problem:** The app cannot connect to the backend API.
+**Solution:**
+1. Verify \`api_url\` in \`src/ApiUrl.js\` includes \`https://\` and ends with \`/\`.
+2. Ensure your backend server is running and accessible from your device's network.
+3. Check CORS configuration on your WordPress server.
+
+---
+
+## Third-Party Services
+
+### Google Maps not showing
+**Problem:** Map markers or the map itself are missing.
+**Solution:**
+1. Verify the Google Maps API key in \`app.json\`.
+2. Ensure "Maps SDK for Android/iOS" is enabled in Google Cloud Console.
+3. Check that billing is enabled for your Google Cloud project.
+
+### Google Sign-In not working
+**Problem:** Users cannot sign in with Google.
+**Solution:**
+1. Verify Client IDs in \`.env\`.
+2. Ensure the Bundle ID (iOS) and Package Name (Android) match exactly with the Google Cloud Console settings.
+3. Rebuild the app after any changes to \`.env\`.
+
+---
+
+## Need More Help?
+If you're still stuck, please contact our support team at [support@webpenter.com](mailto:support@webpenter.com) with your purchase code and a detailed description of the issue.
+    `
+  },
+  changelog: {
+    title: "ChangeLog",
+    icon: Clock,
+    tags: ["updates", "versions", "history"],
+    content: `
+# ChangeLog
+
+All notable changes to the BookHere Documentation Hub will be documented in this file.
+
+---
+
+## [3.0.0] - 2026-01-08
+
+### Added
+- **AI Assistant**: Integrated Google Gemini-powered "Ask AI" feature for technical support.
+- **Smart Search**: Real-time search across all documentation sections.
+- **Responsive Design**: Fully optimized mobile experience with a premium bottom-sheet TOC.
+- **Reading Progress**: Visual indicator for tracking position in long guides.
+- **Interactive TOC**: Dynamic "On this page" navigation for desktop and mobile.
+- **Premium UI**: Modern aesthetics with glassmorphism and smooth transitions.
+
+### Changed
+- Migrated documentation to a React-based high-performance portal.
+- Updated installation and configuration guides for Expo SDK 53.
+
+---
+
+## [2.0.0] - 2025-11-15
+
+### Added
+- Initial support for React Native 0.79.
+- Added Stripe and PayPal payment integration guides.
+- Expanded FAQ section with common setup questions.
+
+---
+
+## [1.0.0] - 2025-09-01
+- Initial release of the BookHere mobile app documentation.
+    `
+  },
+  submission: {
+    title: "App Submission",
+    icon: ExternalLink,
+    subItems: {
+      play_store: {
+        title: "Google Play Store",
+        icon: Play,
+        tags: ["android", "submission", "checklist"],
+        content: `
+# Google Play Store Submission Checklist
+
+Follow this checklist to ensure a smooth submission process for the Android version of your app.
+
+---
+
+## 1. Preparation
+- [ ] **Developer Account**: Ensure you have a Google Play Developer account ($25 one-time fee).
+- [ ] **App Name**: Finalize your app's display name (max 50 characters).
+- [ ] **Package Name**: Verify \`com.yourcompany.yourapp\` is unique and matches \`app.json\`.
+
+## 2. Assets & Metadata
+- [ ] **App Icon**: 512x512px PNG (32-bit).
+- [ ] **Feature Graphic**: 1024x500px JPG or 24-bit PNG.
+- [ ] **Screenshots**: At least 2-8 screenshots for Phone, 7-inch Tablet, and 10-inch Tablet.
+- [ ] **Descriptions**: Short description (80 chars) and Full description (4000 chars).
+- [ ] **Privacy Policy**: Hosted URL for your app's privacy policy.
+
+## 3. Technical Requirements
+- [ ] **Production Build**: Generate a signed Android App Bundle (AAB) using \`eas build --platform android --profile production\`.
+- [ ] **Permissions**: Ensure all requested permissions are necessary and documented.
+- [ ] **Target API Level**: Ensure the app targets the latest Android API level (usually 34+).
+
+## 4. Submission
+- [ ] **Content Rating**: Complete the content rating questionnaire.
+- [ ] **App Access**: Provide login credentials if your app requires authentication.
+- [ ] **Internal/Production Track**: Upload the AAB to the Production track.
+- [ ] **Review**: Submit for review (usually takes 1-3 days).
+`
+      },
+      app_store: {
+        title: "Apple App Store",
+        icon: Smartphone,
+        tags: ["ios", "submission", "checklist"],
+        content: `
+# Apple App Store Submission Checklist
+
+Follow this checklist to ensure your iOS app meets Apple's strict submission guidelines.
+
+---
+
+## 1. Preparation
+- [ ] **Developer Account**: Ensure you have an active Apple Developer Program membership ($99/year).
+- [ ] **App Name**: Finalize your app name (max 30 characters).
+- [ ] **Bundle ID**: Verify your Bundle Identifier matches \`app.json\`.
+
+## 2. Assets & Metadata
+- [ ] **App Icon**: 1024x1024px PNG (no transparency).
+- [ ] **Screenshots**: Required for 6.5" (iPhone 15/14/13 Pro Max) and 5.5" (iPhone 8 Plus) displays.
+- [ ] **Keywords**: Up to 100 characters of comma-separated keywords.
+- [ ] **Support URL**: A URL where users can find support for the app.
+
+## 3. Technical Requirements
+- [ ] **Production Build**: Generate an IPA using \`eas build --platform ios --profile production\`.
+- [ ] **Upload**: Use Transporter or \`eas submit\` to upload the build to App Store Connect.
+- [ ] **App Privacy**: Complete the "App Privacy" section (Data Types, Tracking).
+
+## 4. Submission
+- [ ] **App Review Information**: Provide a demo account (username/password) for Apple reviewers.
+- [ ] **Version Release**: Choose between Manual or Automatic release after approval.
+- [ ] **Submit**: Click "Add for Review" and wait for the status to change to "Waiting for Review".
+`
+      }
+    }
   }
 };
 

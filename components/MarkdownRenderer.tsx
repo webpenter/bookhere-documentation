@@ -282,12 +282,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
 
         if (block.type === 'task') {
           return (
-            <div key={i} className="flex items-center gap-3 my-2 ml-2">
-              {block.completed ?
-                <CheckSquare className="text-rose-500" size={18} /> :
-                <Square className="text-slate-300" size={18} />
-              }
-              <span className={`text-slate-600 ${block.completed ? 'line-through text-slate-400' : ''}`} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />
+            <div key={i} className="flex items-start gap-3 my-3 ml-2">
+              <div className="shrink-0 mt-1">
+                {block.completed ?
+                  <CheckSquare className="text-rose-500" size={18} /> :
+                  <Square className="text-slate-300" size={18} />
+                }
+              </div>
+              <span className={`text-slate-600 leading-relaxed ${block.completed ? 'line-through text-slate-400' : ''}`} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />
             </div>
           );
         }

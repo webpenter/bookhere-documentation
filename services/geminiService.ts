@@ -4,10 +4,16 @@ import { DOCS_CONTENT } from "../constants";
 
 export const askGeminiAssistant = async (query: string): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-  
+
   // Format documentation content for context
   const docsContext = Object.values(DOCS_CONTENT).map(section => {
-    return `Section: ${section.title}\nContent: ${section.content}`;
+    let text = `Section: ${section.title}\nContent: ${section.content || ''}`;
+    if (section.subItems) {
+      Object.values(section.subItems).forEach(sub => {
+        text += `\n\nSub-section: ${sub.title}\nContent: ${sub.content}`;
+      });
+    }
+    return text;
   }).join('\n\n---\n\n');
 
   const systemInstruction = `

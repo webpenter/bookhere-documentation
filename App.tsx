@@ -90,18 +90,43 @@ const App: React.FC = () => {
   const filteredDocs = useMemo<DocsContent>(() => {
     if (!searchQuery) return DOCS_CONTENT;
     const result: DocsContent = {};
+    const query = searchQuery.toLowerCase();
+
     Object.entries(DOCS_CONTENT).forEach(([key, val]) => {
-      const match = val.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        val.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        val.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-      if (match) {
+      const mainMatch = val.title.toLowerCase().includes(query) ||
+        (val.content?.toLowerCase().includes(query)) ||
+        val.tags?.some(tag => tag.toLowerCase().includes(query));
+
+      if (mainMatch) {
         result[key] = val;
+      } else if (val.subItems) {
+        // Check sub-items
+        const matchingSubItems: Record<string, any> = {};
+        Object.entries(val.subItems).forEach(([subKey, subVal]) => {
+          if (subVal.title.toLowerCase().includes(query) ||
+            subVal.content.toLowerCase().includes(query) ||
+            subVal.tags?.some(tag => tag.toLowerCase().includes(query))) {
+            matchingSubItems[subKey] = subVal;
+          }
+        });
+
+        if (Object.keys(matchingSubItems).length > 0) {
+          result[key] = { ...val, subItems: matchingSubItems };
+        }
       }
     });
     return result;
   }, [searchQuery]);
 
-  const activeSection = DOCS_CONTENT[activeTab];
+  const activeSection = useMemo(() => {
+    if (DOCS_CONTENT[activeTab]) return DOCS_CONTENT[activeTab];
+    for (const parent of Object.values(DOCS_CONTENT)) {
+      if (parent.subItems && parent.subItems[activeTab]) {
+        return parent.subItems[activeTab];
+      }
+    }
+    return DOCS_CONTENT['getting_started'];
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-rose-100 selection:text-rose-900">
@@ -186,23 +211,60 @@ const App: React.FC = () => {
               <div className="space-y-1">
                 {Object.entries(DOCS_CONTENT).map(([key, item]: [string, DocSection]) => {
                   const Icon = item.icon;
+                  const hasSubItems = item.subItems && Object.keys(item.subItems).length > 0;
+                  const isParentActive = activeTab === key || (item.subItems && Object.keys(item.subItems).includes(activeTab));
+
                   return (
-                    <button
-                      key={key}
-                      onClick={() => {
-                        setActiveTab(key);
-                        setSidebarOpen(false);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === key
-                        ? 'bg-rose-50 text-rose-600 shadow-sm border border-rose-100'
-                        : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-100'
-                        }`}
-                    >
-                      <Icon size={18} className={`${activeTab === key ? 'text-rose-500' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
-                      {item.title}
-                      {activeTab === key && <ChevronRight size={14} className="ml-auto opacity-50" />}
-                    </button>
+                    <div key={key} className="space-y-1">
+                      <button
+                        onClick={() => {
+                          if (hasSubItems) {
+                            if (!item.content && item.subItems) {
+                              setActiveTab(Object.keys(item.subItems)[0]);
+                            } else {
+                              setActiveTab(key);
+                            }
+                          } else {
+                            setActiveTab(key);
+                          }
+                          setSidebarOpen(false);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === key
+                          ? 'bg-rose-50 text-rose-600 shadow-sm border border-rose-100'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-100'
+                          }`}
+                      >
+                        <Icon size={18} className={`shrink-0 ${activeTab === key ? 'text-rose-500' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
+                        {item.title}
+                        {hasSubItems && <ChevronRight size={14} className={`ml-auto shrink-0 transition-transform ${isParentActive ? 'rotate-90' : ''} opacity-50`} />}
+                      </button>
+
+                      {hasSubItems && isParentActive && (
+                        <div className="ml-9 space-y-1 mt-1 border-l-2 border-slate-100 pl-2">
+                          {Object.entries(item.subItems!).map(([subKey, subItem]) => {
+                            const SubIcon = subItem.icon;
+                            return (
+                              <button
+                                key={subKey}
+                                onClick={() => {
+                                  setActiveTab(subKey);
+                                  setSidebarOpen(false);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={`w-full flex items-center gap-2.5 px-4 py-2 rounded-lg text-[13px] font-medium transition-all ${activeTab === subKey
+                                  ? 'text-rose-600 bg-rose-50/50'
+                                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                                  }`}
+                              >
+                                {SubIcon && <SubIcon size={14} className={`shrink-0 ${activeTab === subKey ? 'text-rose-500' : 'text-slate-400'}`} />}
+                                {subItem.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -253,9 +315,10 @@ const App: React.FC = () => {
               </div>
 
               <MarkdownRenderer
-                content={activeSection.content}
+                content={activeSection.content || ''}
                 onNavigate={(tab) => {
-                  if (DOCS_CONTENT[tab]) {
+                  const exists = DOCS_CONTENT[tab] || Object.values(DOCS_CONTENT).some(p => p.subItems && p.subItems[tab]);
+                  if (exists) {
                     setActiveTab(tab);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }

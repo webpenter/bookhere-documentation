@@ -4,8 +4,14 @@ import { LucideIcon } from 'lucide-react';
 export interface DocSection {
   title: string;
   icon: LucideIcon;
-  content: string;
+  content?: string;
   tags?: string[];
+  subItems?: Record<string, {
+    title: string;
+    icon?: LucideIcon;
+    content: string;
+    tags?: string[];
+  }>;
 }
 
 export type DocsContent = Record<string, DocSection>;
