@@ -7806,11 +7806,11 @@ Verify in \`app.config.js\`:
 
 \`\`\`javascript
 android: {
-        package: "com.webpenter.googlesignin",  // Must match Google Cloud Console
-        versionCode: 11,
-        // ...
-      }
-        \`\`\`
+  package: "com.webpenter.googlesignin",  // Must match Google Cloud Console
+  versionCode: 11,
+  // ...
+}
+\`\`\`
 
 - [ ] Confirm package name matches all Google services configurations
 
