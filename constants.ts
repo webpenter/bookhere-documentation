@@ -6666,88 +6666,984 @@ For security concerns: security@webpenter.com
     icon: Wrench,
     tags: ["help", "fixes", "errors"],
     content: `
-# Troubleshooting Guide
+# Troubleshooting Guide - BookHere Mobile App
 
-Common issues and their solutions when setting up or running the BookHere mobile app.
+Common issues and solutions for the BookHere mobile application.
+
+---
+
+## Table of Contents
+
+1. [Installation Issues](#installation-issues)
+2. [Build & Compilation Issues](#build--compilation-issues)
+3. [Runtime Errors](#runtime-errors)
+4. [Backend & API Issues](#backend--api-issues)
+5. [Authentication Problems](#authentication-problems)
+6. [Payment Issues](#payment-issues)
+7. [Maps & Location Issues](#maps--location-issues)
+8. [Push Notification Issues](#push-notification-issues)
+9. [UI & Display Issues](#ui--display-issues)
+10. [Performance Issues](#performance-issues)
 
 ---
 
 ## Installation Issues
 
-### npm install fails with errors
-**Problem:** \`npm install\` fails with dependency conflicts or permission errors.
+### Cannot find module errors
+
+**Problem:** After running \`npm install\`, getting "Cannot find module" errors
+
 **Solution:**
 \`\`\`bash
-# Clear npm cache
+# 1. Clear npm cache
 npm cache clean --force
 
-# Delete node_modules and package-lock.json
-rm -rf node_modules package-lock.json
+# 2. Remove node_modules and lock file
+rm - rf node_modules package - lock.json
 
-# Reinstall
+# 3. Reinstall dependencies
 npm install
+
+# 4. If on iOS, reinstall pods
+cd ios && pod install && cd..
 \`\`\`
 
-### "Cannot find module" errors
-**Problem:** The app fails to start with "Cannot find module" errors.
-**Solution:** Ensure all dependencies are installed and the Metro bundler is restarted with a clear cache:
-\`\`\`bash
-npm start --clear
-\`\`\`
+---
 
-### Xcode build fails (iOS)
-**Problem:** Build fails in Xcode with various errors.
+### npm install fails with EACCES permission denied
+
+**Problem:** Permission errors during \`npm install\`
+
 **Solution:**
-1. Open Xcode and "Clean Build Folder" (Product → Clean Build Folder).
-2. Delete Derived Data.
-3. Reinstall pods:
 \`\`\`bash
+# Option 1: Use sudo(not recommended)
+sudo npm install
+
+# Option 2: Fix npm permissions(recommended)
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
+source ~/.profile
+
+# Then reinstall
+npm install
+  \`\`\`
+
+---
+
+### gyp ERR! or node-gyp errors
+
+**Problem:** Native module compilation fails
+
+**Solution:**
+\`\`\`bash
+# On macOS
+xcode-select --install
+
+# On Linux
+sudo apt-get install build-essential
+
+# On Windows
+npm install --global windows-build-tools
+
+# Then reinstall
+npm install
+  \`\`\`
+
+---
+
+### Expo CLI not found
+
+**Problem:** \`expo: command not found\`
+
+**Solution:**
+\`\`\`bash
+# Install Expo CLI globally
+npm install -g expo-cli
+
+# Verify installation
+expo --version
+  \`\`\`
+
+---
+
+## Build & Compilation Issues
+
+### Metro bundler fails to start
+
+**Problem:** Metro bundler crashes or shows errors
+
+**Solution:**
+\`\`\`bash
+# Clear Metro cache
+npm start --clear
+
+# OR
+npx react-native start --reset-cache
+
+# If still failing, clear watchman
+watchman watch-del-all
+  \`\`\`
+
+---
+
+### iOS build fails with CocoaPods error
+
+**Problem:** Pod install fails or iOS build errors
+
+**Solution:**
+\`\`\`bash
+# Navigate to iOS directory
 cd ios
+
+# Remove Pods and Podfile.lock
+rm -rf Pods Podfile.lock
+
+# Reinstall pods
 pod deintegrate
 pod install
-cd ..
+
+# If still failing, update CocoaPods
+sudo gem install cocoapods
+
+# Then retry
+pod install --repo-update
+
+cd..
 \`\`\`
 
 ---
 
-## Runtime Issues
+### Android build fails with Gradle error
+
+**Problem:** Android build fails during Gradle compilation
+
+**Solution:**
+\`\`\`bash
+# Navigate to android directory
+cd android
+
+# Clean build
+  ./gradlew clean
+
+# If permission denied
+chmod + x gradlew
+
+# Clear Gradle cache
+rm -rf .gradle
+
+# Return to root and rebuild
+cd..
+npx expo run:android
+  \`\`\`
+
+---
+
+### Build fails with "ANDROID_HOME not set"
+
+**Problem:** Android SDK path not configured
+
+**Solution:**
+
+**On macOS/Linux:**
+\`\`\`bash
+# Add to ~/.zshrc or ~/.bash_profile
+export ANDROID_HOME = $HOME/Library/Android/sdk
+export PATH = $PATH: $ANDROID_HOME/emulator
+export PATH = $PATH: $ANDROID_HOME/platform-tools
+
+# Reload
+source ~/.zshrc
+  \`\`\`
+
+**On Windows:**
+\`\`\`
+# Add to Environment Variables
+ANDROID_HOME = C:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Add to Path
+% ANDROID_HOME %\\platform-tools
+% ANDROID_HOME %\\emulator
+      \`\`\`
+
+---
+
+### EAS build fails
+
+**Problem:** EAS Build cloud build fails
+
+**Solution:**
+\`\`\`bash
+# 1. Check build logs
+eas build: list
+
+# 2. View specific build logs
+eas build: view[BUILD_ID]
+
+# 3. Common fixes:
+# - Ensure eas.json is configured correctly
+# - Check app.json for errors
+# - Verify bundle identifier / package name
+# - Clear EAS cache
+eas build --clear -cache
+
+# 4. Rebuild
+eas build --platform ios --profile production
+  \`\`\`
+
+---
+
+## Runtime Errors
 
 ### App shows blank white screen
-**Problem:** The app loads but only shows a white screen.
-**Solution:** This is often a bundle error. Restart the development server with a clear cache:
+
+**Problem:** App loads but shows blank screen
+
+**Solution:**
 \`\`\`bash
+# 1. Check console for errors
+# Look for JavaScript errors in terminal
+
+# 2. Clear Metro cache
 npm start --clear
+
+# 3. Check App.tsx for syntax errors
+# Ensure all imports are correct
+
+# 4. Verify navigation setup
+# Check if navigation is properly configured
+
+# 5. Test with simplified App.tsx
+# Temporarily simplify to isolate issue
+  \`\`\`
+
+---
+
+### App crashes on startup
+
+**Problem:** App crashes immediately when opening
+
+**Solution:**
+\`\`\`bash
+# 1. Check device logs
+# iOS: Xcode → Window → Devices and Simulators → View Device Logs
+# Android: adb logcat
+
+# 2. Common causes:
+# - Missing native dependencies
+# - Incorrect configuration
+# - JavaScript errors
+
+# 3. Rebuild with clean slate
+rm -rf node_modules ios/build android/build
+npm install
+npx expo prebuild --clean
+
+# 4. Rebuild app
+npx expo run:ios  # or run: android
+  \`\`\`
+
+---
+
+### "Network request failed" errors
+
+**Problem:** All API calls failing with network errors
+
+**Solution:**
+1. **Check API URL**
+   \`\`\`javascript
+// src/ApiUrl.js
+// Ensure URL is correct and ends with /
+api_url: "https://yourdomain.com/"
+  \`\`\`
+
+2. **Verify backend is accessible**
+   \`\`\`bash
+   # Test in browser
+   curl https://yourdomain.com/wp-json/
 \`\`\`
 
-### "Network request failed"
-**Problem:** The app cannot connect to the backend API.
-**Solution:**
-1. Verify \`api_url\` in \`src/ApiUrl.js\` includes \`https://\` and ends with \`/\`.
-2. Ensure your backend server is running and accessible from your device's network.
-3. Check CORS configuration on your WordPress server.
+3. **Check CORS configuration**
+   - Backend must allow cross-origin requests
+   - Add CORS headers in WordPress
+
+4. **Test on physical device**
+   - Simulators may have network restrictions
+   - Use same WiFi network
+
+5. **Check firewall/security settings**
+   - Disable VPN temporarily
+   - Check corporate firewall
 
 ---
 
-## Third-Party Services
+### Undefined is not an object error
 
-### Google Maps not showing
-**Problem:** Map markers or the map itself are missing.
-**Solution:**
-1. Verify the Google Maps API key in \`app.json\`.
-2. Ensure "Maps SDK for Android/iOS" is enabled in Google Cloud Console.
-3. Check that billing is enabled for your Google Cloud project.
+**Problem:** Errors like "undefined is not an object (evaluating 'x.y')"
 
-### Google Sign-In not working
-**Problem:** Users cannot sign in with Google.
 **Solution:**
-1. Verify Client IDs in \`.env\`.
-2. Ensure the Bundle ID (iOS) and Package Name (Android) match exactly with the Google Cloud Console settings.
-3. Rebuild the app after any changes to \`.env\`.
+1. **Check the error stack trace**
+   - Identify the file and line number
+   - Look for the specific property access
+
+2. **Add null checks**
+   \`\`\`javascript
+// Before
+const value = data.property.subProperty;
+
+// After
+const value = data?.property?.subProperty;
+\`\`\`
+
+3. **Verify API responses**
+   - Check if backend is returning expected data
+   - Add console.log to inspect data
+
+4. **Check AsyncStorage**
+   - May be trying to access non-existent stored data
+   - Add default values
 
 ---
 
-## Need More Help?
-If you're still stuck, please contact our support team at [support@webpenter.com](mailto:support@webpenter.com) with your purchase code and a detailed description of the issue.
+### Cannot read property of undefined
+
+**Problem:** Similar to above, accessing properties on undefined
+
+**Solution:**
+\`\`\`javascript
+// Use optional chaining and nullish coalescing
+const name = user?.profile?.name ?? 'Guest';
+
+// Or check before accessing
+if (user && user.profile) {
+  const name = user.profile.name;
+}
+
+// For arrays
+const firstItem = items?.[0] ?? null;
+\`\`\`
+
+---
+
+## Backend & API Issues
+
+### 401 Unauthorized errors
+
+**Problem:** API returns 401 errors
+
+**Solution:**
+1. **Check authentication token**
+   \`\`\`javascript
+  // Verify token is being sent in headers
+  // Check token expiration
+  \`\`\`
+
+2. **Re-login**
+   - Token may have expired
+   - Clear storage and login again
+
+3. **Verify backend JWT configuration**
+   \`\`\`php
+// wp-config.php
+define('JWT_AUTH_SECRET_KEY', 'your-secret-key');
+\`\`\`
+
+4. **Check token format**
+   - Should be Bearer token
+   - Format: \`Bearer eyJ0eXAiOiJKV1QiLCJhbGc...\`
+
+---
+
+### 404 Not Found on API calls
+
+**Problem:** Backend endpoints return 404
+
+**Solution:**
+1. **Verify API URL**
+   - Check \`src/ApiUrl.js\`
+   - Ensure trailing slash: \`https://domain.com/\`
+
+2. ** Check permalinks **
+  - WordPress Settings → Permalinks
+    - Should be "Post name" structure
+
+3. ** Verify.htaccess **
+  - Ensure mod_rewrite is enabled
+    - Check.htaccess file exists
+
+4. ** Test endpoint directly **
+  \`\`\`bash
+   curl https://yourdomain.com/wp-json/jwt-auth/v1/token
+   \`\`\`
+
+---
+
+### CORS errors
+
+  ** Problem:** "Access-Control-Allow-Origin" errors
+
+    ** Solution:**
+
+** Option 1: Add to wp - config.php **
+  \`\`\`php
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+\`\`\`
+
+  ** Option 2: Use WordPress plugin **
+    - Install "WP CORS" plugin
+      - Configure allowed origins
+
+        ** Option 3: Server configuration **
+          \`\`\`apache
+# .htaccess
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+\`\`\`
+
+---
+
+### Slow API responses
+
+  ** Problem:** API calls taking too long
+
+    ** Solution:**
+      1. ** Optimize backend **
+        - Add caching plugin(WP Super Cache)
+          - Optimize database
+            - Use CDN for images
+
+2. ** Reduce payload size **
+    - Limit returned fields
+      - Add pagination
+        - Compress responses
+
+3. ** Add timeout handling **
+  \`\`\`javascript
+   axios.defaults.timeout = 10000; // 10 seconds
+   \`\`\`
+
+---
+
+## Authentication Problems
+
+### Google Sign - In not working
+
+  ** Problem:** Google Sign - In fails or shows errors
+
+    ** Solution:**
+      1. ** Verify Client IDs **
+        \`\`\`env
+   # .env
+   EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=correct_client_id
+   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=correct_web_client_id
+   \`\`\`
+
+2. ** Check bundle ID matches **
+  - Google Cloud Console bundle ID
+    - app.json bundle identifier
+      - Must match exactly
+
+3. ** Rebuild app after.env changes **
+  \`\`\`bash
+   npm start --clear
+   eas build --platform all
+   \`\`\`
+
+4. ** Verify OAuth consent screen **
+  - Check it's published (not in testing)
+    - Add test users if in testing mode
+
+5. ** Check Google Services files **
+  - iOS: GoogleService-Info.plist in root
+    - Android: google-services.json in root
+
+---
+
+### Biometric authentication fails
+
+  ** Problem:** Face ID / Fingerprint not working
+
+    ** Solution:**
+      1. ** Check device support **
+        \`\`\`javascript
+   import * as LocalAuthentication from 'expo-local-authentication';
+
+   const compatible = await LocalAuthentication.hasHardwareAsync();
+   const enrolled = await LocalAuthentication.isEnrolledAsync();
+   \`\`\`
+
+2. ** Verify permissions **
+  \`\`\`json
+   // app.json
+   "ios": {
+     "infoPlist": {
+       "NSFaceIDUsageDescription": "Allow app to use Face ID"
+     }
+   },
+   "android": {
+     "permissions": [
+       "android.permission.USE_BIOMETRIC"
+     ]
+   }
+   \`\`\`
+
+3. ** Test on physical device **
+  - Biometrics don't work in simulators
+    - Must test on real device
+
+---
+
+### Login session expires quickly
+
+  ** Problem:** Users logged out frequently
+
+    ** Solution:**
+      1. ** Extend token expiration **
+        \`\`\`php
+   // Backend wp-config.php
+   define('JWT_AUTH_EXPIRE_TIME', 7 * DAY_IN_SECONDS);
+   \`\`\`
+
+2. ** Implement token refresh **
+  - Add refresh token logic
+    - Refresh before expiration
+
+3. ** Check secure storage **
+  - Verify tokens are stored securely
+    - Check if tokens are being cleared
+
+---
+
+## Payment Issues
+
+### Stripe payments failing
+
+  ** Problem:** Payment processing fails with Stripe
+
+  ** Solution:**
+    1. ** Verify publishable key **
+      \`\`\`typescript
+   // Check helpers.ts
+   const publishableKey = "pk_test_..." // Correct key
+   \`\`\`
+
+2. ** Use test cards **
+  \`\`\`
+   Success: 4242 4242 4242 4242
+   Decline: 4000 0000 0000 0002
+   3D Secure: 4000 0025 0000 3155
+   \`\`\`
+
+3. ** Check Stripe dashboard **
+  - View error logs
+    - Check webhook configuration
+      - Verify API version
+
+4. ** Test mode vs Live mode **
+  - Ensure using correct keys
+- Test mode for development
+  - Live mode for production
+
+5. ** Check error messages **
+      \`\`\`javascript
+   try {
+     await stripe.createPaymentMethod(...);
+   } catch (error) {
+     console.log('Stripe error:', error.message);
+   }
+   \`\`\`
+
+---
+
+### Apple Pay not working(iOS)
+
+  ** Problem:** Apple Pay option not showing or fails
+
+    ** Solution:**
+      1. ** Verify merchant ID **
+        - Created in Apple Developer Console
+          - Added to app.json entitlements
+            - Configured in Stripe dashboard
+
+2. ** Check device support **
+  - Device must support Apple Pay
+    - Card must be added to Wallet
+
+3. ** Test on physical device **
+  - Apple Pay doesn't work in simulator
+
+4. ** Verify app.json configuration **
+  \`\`\`json
+   {
+     "ios": {
+       "entitlements": {
+         "com.apple.developer.in-app-payments": [
+           "merchant.com.yourcompany.yourapp"
+         ]
+       }
+     }
+   }
+   \`\`\`
+
+---
+
+### Payment succeeds but booking not created
+
+  ** Problem:** Payment processes but no reservation created
+
+    ** Solution:**
+      1. ** Check backend webhook **
+        - Verify webhook URL is correct
+          - Check webhook is receiving events
+            - View webhook logs in Stripe
+
+2. ** Verify payment metadata **
+  \`\`\`javascript
+   // Ensure booking info is sent
+   metadata: {
+     booking_id: bookingId,
+     user_id: userId,
+     property_id: propertyId
+   }
+   \`\`\`
+
+3. ** Check backend processing **
+  - View backend logs
+    - Ensure booking creation logic works
+      - Test webhook manually
+
+---
+
+## Maps & Location Issues
+
+### Maps not showing
+
+  ** Problem:** Google Maps component shows blank
+
+    ** Solution:**
+      1. ** Verify API key **
+        \`\`\`json
+   // app.json
+   "ios": {
+     "config": {
+       "googleMapsApiKey": "AIza..."  // Correct key
+     }
+   }
+   \`\`\`
+
+2. ** Check APIs enabled **
+  - Maps SDK for iOS
+    - Maps SDK for Android
+      - Places API(if using)
+
+      3. ** Enable billing **
+        - Google Cloud Console
+          - Billing must be enabled
+            - Free tier available
+
+4. ** Check API restrictions **
+  - Remove restrictions during testing
+    - Add proper restrictions for production
+
+5. ** Rebuild app **
+  \`\`\`bash
+   # Changes to app.json require rebuild
+   eas build --platform all --profile development
+   \`\`\`
+
+---
+
+### Location permissions denied
+
+  ** Problem:** App can't access device location
+
+    ** Solution:**
+      1. ** Check permissions in app.json **
+        \`\`\`json
+   "ios": {
+     "infoPlist": {
+       "NSLocationWhenInUseUsageDescription": "We need location to show nearby properties"
+     }
+   }
+   \`\`\`
+
+2. ** Request permissions in code **
+  \`\`\`javascript
+   import * as Location from 'expo-location';
+
+   const { status } = await Location.requestForegroundPermissionsAsync();
+   if (status !== 'granted') {
+     // Handle denial
+   }
+   \`\`\`
+
+3. ** Check device settings **
+  - iOS: Settings → App → Location
+    - Android: Settings → Apps → App → Permissions
+
+---
+
+## Push Notification Issues
+
+### Notifications not received
+
+  ** Problem:** Push notifications don't appear
+
+    ** Solution:**
+      1. ** Verify permissions **
+        \`\`\`javascript
+   import * as Notifications from 'expo-notifications';
+
+   const { status } = await Notifications.requestPermissionsAsync();
+   \`\`\`
+
+2. ** Check notification token **
+  \`\`\`javascript
+   const token = await Notifications.getExpoPushTokenAsync();
+   console.log('Token:', token.data);
+   \`\`\`
+
+3. ** Test with Expo tool **
+  \`\`\`bash
+   expo push:send --to ExponentPushToken[xxx] --title "Test"
+   \`\`\`
+
+4. ** Verify backend sending **
+  - Check backend notification sending logic
+    - View Expo Push Notification logs
+
+5. ** Test on physical device **
+  - Notifications may not work on simulators
+    - iOS simulator doesn't support push
+
+6. ** Check notification settings **
+  - Device notification settings
+    - App - specific settings
+      - Do Not Disturb mode
+
+---
+
+### APNs or FCM configuration errors
+
+  ** Problem:** iOS(APNs) or Android(FCM) push not working
+
+    ** Solution:**
+      1. ** For iOS(APNs) **
+        \`\`\`bash
+   eas credentials
+   # Select iOS → Push Notifications
+   # Upload APNs key (.p8 file)
+   \`\`\`
+
+2. ** For Android(FCM) **
+  \`\`\`bash
+   eas credentials
+   # Select Android → Push Notifications
+   # Upload google-services.json
+   \`\`\`
+
+3. ** Verify credentials **
+  - Check EAS credentials manager
+    - Ensure correct team / account
+      - Verify key IDs match
+
+---
+
+## UI & Display Issues
+
+### Dark mode not working
+
+  ** Problem:** App doesn't respect dark mode
+
+    ** Solution:**
+      1. ** Check device settings **
+        - iOS: Settings → Display & Brightness → Dark
+          - Android: Settings → Display → Dark theme
+
+2. ** Verify useColorScheme **
+  \`\`\`javascript
+   import { useColorScheme } from 'react-native';
+
+   const colorScheme = useColorScheme();
+   const colors = Colors[colorScheme ?? 'light'];
+   \`\`\`
+
+3. ** Check Colors.ts **
+  - Ensure dark colors are defined
+    - Verify colors are used in components
+
+---
+
+### Images not loading
+
+  ** Problem:** Images show broken or don't load
+
+    ** Solution:**
+      1. ** Check image URLs **
+        - Verify URLs are correct and accessible
+          - Test URLs in browser
+
+2. ** Check network connection **
+  - Ensure device has internet
+    - Test API connectivity
+
+3. ** Add error handling **
+  \`\`\`javascript
+   <Image
+     source={{ uri: imageUrl }}
+     onError={(error) => console.log('Image error:', error)}
+     defaultSource={require('./assets/placeholder.png')}
+   />
+   \`\`\`
+
+4. ** Check CORS for images **
+  - Image server must allow CORS
+    - Add appropriate headers
+
+---
+
+### Layout broken on different screen sizes
+
+  ** Problem:** UI looks broken on some devices
+
+    ** Solution:**
+      1. ** Use responsive design **
+        \`\`\`javascript
+   import { Dimensions } from 'react-native';
+
+   const { width, height } = Dimensions.get('window');
+
+   // Use percentages or calculated values
+   width: width * 0.9
+   \`\`\`
+
+2. ** Test on multiple devices **
+  - Small phones(iPhone SE)
+    - Large phones(iPhone Pro Max)
+      - Tablets
+      - Different aspect ratios
+
+3. ** Use flexible layouts **
+  \`\`\`javascript
+   <View style={{ flex: 1 }}>
+     <ScrollView>
+       {/* Content */}
+     </ScrollView>
+   </View>
+   \`\`\`
+
+---
+
+## Performance Issues
+
+### App is slow or laggy
+
+  ** Problem:** App performance is poor
+
+    ** Solution:**
+      1. ** Enable Hermes ** (if not enabled)
+\`\`\`json
+   // app.json
+   "jsEngine": "hermes"
+   \`\`\`
+
+2. ** Optimize images **
+  - Compress images
+    - Use appropriate sizes
+      - Consider WebP format
+
+3. ** Use React.memo **
+  \`\`\`javascript
+   export const MyComponent = React.memo(({ prop }) => {
+     return <View>{/* content */}</View>;
+   });
+   \`\`\`
+
+4. ** Optimize re - renders **
+  \`\`\`javascript
+   // Use useCallback
+   const handlePress = useCallback(() => {
+     // logic
+   }, [dependencies]);
+
+   // Use useMemo
+   const value = useMemo(() => {
+     return expensiveCalculation();
+   }, [dependencies]);
+   \`\`\`
+
+5. ** Profile with Flipper **
+- Install Flipper
+  - Use React DevTools
+    - Profile performance
+
+---
+
+### App crashes with out of memory
+
+  ** Problem:** App crashes due to memory issues
+
+    ** Solution:**
+      1. ** Optimize images **
+        - Reduce image sizes
+          - Use thumbnails for lists
+            - Load full size on demand
+
+2. ** Fix memory leaks **
+  - Cleanup listeners in useEffect
+    - Cancel timers and intervals
+      - Clear intervals on unmount
+
+3. ** Use FlatList for long lists **
+  \`\`\`javascript
+   <FlatList
+     data={items}
+     renderItem={renderItem}
+     keyExtractor={item => item.id}
+     maxToRenderPerBatch={10}
+     windowSize={10}
+   />
+   \`\`\`
+
+---
+
+## Getting Further Help
+
+If issues persist after trying these solutions:
+
+1. ** Check Error Logs **
+  - iOS: Xcode Console
+    - Android: \`adb logcat\`
+
+2. ** Search Documentation **
+  - React Native: https://reactnative.dev
+  - Expo: https://docs.expo.dev
+
+3. ** Community Resources **
+  - Stack Overflow
+    - React Native GitHub Issues
+      - Expo Forums
+
+4. ** Contact Support **
+   📧 Email: support @webpenter.com
+
+Include:
+- Your purchase code
+  - Detailed error description
+    - Error messages / screenshots
+      - Steps to reproduce
+        - Device / platform info
+
+---
+
+** Still stuck ?** Don't hesitate to reach out to our support team!
+
+
     `
   },
   changelog: {
@@ -6755,39 +7651,478 @@ If you're still stuck, please contact our support team at [support@webpenter.com
     icon: Clock,
     tags: ["updates", "versions", "history"],
     content: `
-# ChangeLog
+# Changelog
 
-All notable changes to the BookHere Documentation Hub will be documented in this file.
+All notable changes to the BookHere mobile application will be documented in this file.
 
----
-
-## [3.0.0] - 2026-01-08
-
-### Added
-- **AI Assistant**: Integrated Google Gemini-powered "Ask AI" feature for technical support.
-- **Smart Search**: Real-time search across all documentation sections.
-- **Responsive Design**: Fully optimized mobile experience with a premium bottom-sheet TOC.
-- **Reading Progress**: Visual indicator for tracking position in long guides.
-- **Interactive TOC**: Dynamic "On this page" navigation for desktop and mobile.
-- **Premium UI**: Modern aesthetics with glassmorphism and smooth transitions.
-
-### Changed
-- Migrated documentation to a React-based high-performance portal.
-- Updated installation and configuration guides for Expo SDK 53.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [2.0.0] - 2025-11-15
+## [3.0.0] - 2026-01-05
 
-### Added
-- Initial support for React Native 0.79.
-- Added Stripe and PayPal payment integration guides.
-- Expanded FAQ section with common setup questions.
+### 🎉 Major Release - Complete Redesign & Performance Overhaul
+
+This is the biggest update yet! Complete redesigns, multi-language support, and massive performance improvements.
+
+### ✨ Added
+
+#### Multi-Language Support
+- **10 Languages** now supported:
+  - English
+  - Spanish (Español)
+  - Portuguese (Português)
+  - French (Français)
+  - German (Deutsch)
+  - Russian (Русский)
+  - Chinese (中文)
+  - Arabic (العربية) with RTL support
+  - Urdu (اردو) with RTL support
+  - Hindi (हिंदी)
+- Automatic device language detection
+- Runtime language switching
+- Complete UI translation coverage
+
+#### Blog System Redesign
+- Beautiful full-screen image galleries with swipe navigation
+- Reading progress bar
+- Engagement metrics (likes, comments, saves)
+- Author profile cards with detailed information
+- Related articles carousel
+- Quick actions bar for bookmarking and sharing
+- Smooth animations throughout
+- Modern magazine-style reading experience
+
+#### Property Management Redesign
+- Grid/list view toggle for property listings
+- Advanced search within your properties
+- Quick stats cards (Published, Pending, Rejected)
+- Status-based filtering with one tap
+- Swipe left for quick edit/delete actions
+- Pull-to-refresh functionality
+- Improved property status indicators
+- Enhanced empty states
+
+#### Social Sharing Integration
+- Facebook sharing
+- Twitter sharing
+- WhatsApp sharing
+- Telegram sharing
+- Copy link functionality
+- Native share sheet integration
+- Smooth sharing animations
+
+### 🎨 Changed
+
+#### Performance Improvements
+- **60% reduction in app size** (30-40MB vs 100MB)
+- **40% faster app startup time**
+- **30% less memory usage**
+- **60fps scrolling** optimization
+- Improved image loading and caching
+- Better memory management
+- Optimized animations and transitions
+
+#### Messaging System
+- Updated color scheme matching app branding
+- All icons now use BookHere signature colors
+- Improved message sync reliability
+- Enhanced performance
+- Better error handling
+- Smoother animations
+
+#### UI/UX Enhancements
+- Consistent color usage throughout app
+- Improved dark mode appearance
+- Better loading states with shimmer effects
+- Enhanced empty state messages
+- Smoother transitions between screens
+- Updated icons and indicators
+- Refined spacing and typography
+
+### 🐛 Fixed
+
+#### Android Fixes
+- Fixed back button not working properly in modals
+- Improved keyboard handling in messages and forms
+- Fixed status bar appearance on all Android devices
+- Corrected shadows and elevations displaying
+- Resolved navigation state persistence issues
+
+#### Messaging Fixes
+- Fixed message sync issues causing delays
+- Prevented data loss when navigating from unsent messages
+- Fixed crashes when loading images or documents
+- Improved message delivery reliability
+- Fixed notification handling for messages
+
+#### Property Listing Fixes
+- Fixed favorite/bookmark syncing across app
+- Improved property image loading and caching
+- Fixed layout issues on different screen sizes
+- Better error handling when properties fail to load
+- Fixed property search result accuracy
+
+#### Search & Navigation Fixes
+- Improved search results accuracy
+- Fixed navigation history tracking
+- Better deep linking support for notifications
+- Navigation state now persists across app restarts
+- Fixed filter application issues
+
+#### Visual Polish Fixes
+- Fixed inconsistent colors across the app
+- Improved dark mode appearance
+- Better loading states and animations
+- Fixed visual glitches and layout shifts
+- Corrected RTL layout issues
+
+### 🔧 Technical Improvements
+
+#### Under the Hood
+- Enabled ProGuard code optimization for Android
+- Split APKs by architecture for smaller downloads
+- Improved image optimization and compression
+- Better error boundaries prevent full app crashes
+- Fixed memory leaks in auto-slide carousels
+- Improved API request handling and cancellation
+- Better TypeScript type coverage
+
+### 📊 Statistics
+
+- **11** new blog components created from scratch
+- **10** languages supported
+- **60%** reduction in app size
+- **40%** faster app startup
+- **30%** less memory usage
+- **68** bug fixes and improvements
+- **2** complete feature redesigns
+- **Hundreds** of visual and performance enhancements
 
 ---
 
-## [1.0.0] - 2025-09-01
-- Initial release of the BookHere mobile app documentation.
+## [2.0.0] - 2025-08-15
+
+### 🎉 Major Update - Enhanced Features & Stability
+
+### ✨ Added
+- **Dark Mode Support**: Automatic dark theme based on system settings
+- **Biometric Authentication**: Face ID and Fingerprint login
+- **Enhanced Wallet**: Detailed earnings analytics and charts
+- **Invoice Generation**: Download and share booking invoices
+- **Property Analytics**: View performance metrics for listings
+- **Push Notification**: Real-time booking and message alerts
+- **OTP Verification**: Phone number verification system
+
+### 🎨 Changed
+- Redesigned home screen with better property discovery
+- Improved property detail page layout
+- Enhanced search and filter interface
+- Better image gallery with pinch-to-zoom
+- Modernized profile settings screen
+- Updated color scheme for better contrast
+
+### 🐛 Fixed
+- Fixed login session timeout issues
+- Resolved image upload failures
+- Fixed booking date selection bugs
+- Improved API error handling
+- Fixed payment processing edge cases
+- Resolved navigation stack issues
+- Fixed calendar date picker bugs
+
+### 🔧 Technical
+- Updated to React Native 0.72.0
+- Updated to Expo SDK 49
+- Migrated to React Navigation 6.x
+- Improved TypeScript coverage
+- Better code organization
+- Performance optimizations
+
+---
+
+## [1.5.0] - 2025-05-20
+
+### ✨ Added
+- **Property Comparison**: Compare multiple properties side-by-side
+- **Saved Searches**: Save search criteria for quick access
+- **Price Alerts**: Get notified when prices drop
+- **Instant Booking**: Book properties without host approval
+- **Amenities Filtering**: Enhanced filter by property amenities
+- **Map Clustering**: Better map performance with many properties
+
+### 🎨 Changed
+- Improved property card design
+- Enhanced booking confirmation flow
+- Better search results pagination
+- Modernized settings interface
+- Updated messaging UI
+
+### 🐛 Fixed
+- Fixed map marker clustering issues
+- Resolved booking confirmation emails
+- Fixed date range selection bugs
+- Improved offline handling
+- Fixed crash on property details
+- Resolved payment webhook issues
+
+---
+
+## [1.4.2] - 2025-03-10
+
+### 🐛 Fixed
+- Critical payment processing bug
+- Fixed Google Sign-In on iOS
+- Resolved navigation crash
+- Fixed property image carousel
+- Improved API timeout handling
+
+### 🔧 Technical
+- Updated dependencies to latest stable versions
+- Security patches applied
+- Performance improvements
+
+---
+
+## [1.4.0] - 2025-02-01
+
+### ✨ Added
+- **PayPal Integration**: Alternative payment method
+- **Thai QR Payment**: QR code-based payments
+- **Property Video Tours**: Support for video uploads
+- **Review Photos**: Guests can upload photos with reviews
+- **Host Response**: Hosts can respond to reviews
+- **Property Rules**: Detailed house rules section
+
+### 🎨 Changed
+- Improved booking flow with step-by-step wizard
+- Enhanced property images with better quality
+- Better loading indicators throughout app
+- Modernized tab bar design
+
+### 🐛 Fixed
+- Fixed Stripe payment errors on some cards
+- Resolved favorite sync issues
+- Fixed messaging notification bugs
+- Improved error messages
+
+---
+
+## [1.3.0] - 2024-12-15
+
+### ✨ Added
+- **Reservation Management**: Complete dashboard for hosts
+- **Calendar View**: See bookings in calendar format
+- **Guest Profiles**: View guest information and history
+- **Cancellation Requests**: Request and manage cancellations
+- **Property Status**: Track listing approval status
+- **Earnings Dashboard**: Detailed revenue tracking
+
+### 🎨 Changed
+- Redesigned dashboard navigation
+- Improved property management interface
+- Enhanced messaging interface
+- Better tablet support
+
+### 🐛 Fixed
+- Fixed reservation sync issues
+- Resolved calendar date bugs
+- Fixed profile update errors
+- Improved image upload reliability
+
+---
+
+## [1.2.0] - 2024-10-20
+
+### ✨ Added
+- **Add Listing**: 7-step property submission wizard
+- **Photo Upload**: Multiple image upload with preview
+- **Pricing Setup**: Flexible pricing configuration
+- **Amenities Selection**: Comprehensive amenities list
+- **Location Picker**: Interactive map for location selection
+- **Draft Saving**: Auto-save listing drafts
+
+### 🎨 Changed
+- Improved form validation throughout app
+- Better error messages
+- Enhanced loading states
+- Modernized UI components
+
+### 🐛 Fixed
+- Fixed form submission errors
+- Resolved image compression issues
+- Fixed location picker bugs
+- Improved validation feedback
+
+---
+
+## [1.1.0] - 2024-08-30
+
+### ✨ Added
+- **Google Maps Integration**: Interactive property maps
+- **Advanced Search**: Search by location, dates, guests
+- **Favorites**: Save properties to wishlist
+- **Reviews & Ratings**: Read and write property reviews
+- **Direct Messaging**: Chat with hosts
+- **Booking System**: Complete reservation workflow
+
+### 🎨 Changed
+- Improved navigation structure
+- Enhanced property detail page
+- Better search interface
+- Modernized authentication screens
+
+### 🐛 Fixed
+- Fixed map rendering issues
+- Resolved booking calculation bugs
+- Fixed messaging sync problems
+- Improved search performance
+
+---
+
+## [1.0.0] - 2024-07-01
+
+### 🎉 Initial Release
+
+#### Core Features
+- **User Authentication**: Login, signup, password recovery
+- **Property Listings**: Browse and search properties
+- **Property Details**: Detailed property information
+- **User Profile**: Manage account settings
+- **Basic Booking**: Make reservations
+- **Stripe Payments**: Credit card payment processing
+- **Basic Messaging**: Contact property hosts
+- **Push Notifications**: Basic notification support
+
+#### Platforms
+- iOS 12.0+
+- Android 5.0+
+
+#### Technology Stack
+- React Native 0.68.0
+- Expo SDK 46
+- React Navigation 5.x
+- TypeScript support
+
+---
+
+## Version History Summary
+
+| Version | Release Date | Key Feature |
+|---------|-------------|-------------|
+| 3.0.0   | 2026-01-05  | Multi-language, redesign, 60% smaller |
+| 2.0.0   | 2025-08-15  | Dark mode, biometrics, analytics |
+| 1.5.0   | 2025-05-20  | Property comparison, instant booking |
+| 1.4.2   | 2025-03-10  | Critical bug fixes |
+| 1.4.0   | 2025-02-01  | PayPal, QR payments, video tours |
+| 1.3.0   | 2024-12-15  | Reservation management, calendar |
+| 1.2.0   | 2024-10-20  | Add listing wizard |
+| 1.1.0   | 2024-08-30  | Google Maps, messaging, reviews |
+| 1.0.0   | 2024-07-01  | Initial release |
+
+---
+
+## Upgrade Guide
+
+### From 2.x to 3.0.0
+
+#### Breaking Changes
+None - all changes are backward compatible
+
+#### Recommended Updates
+1. Update \`app.json\` with new configuration
+2. Add \`.env\` file for Google OAuth
+3. Update dependencies: \`npm install\`
+4. Clear cache: \`npm start --clear\`
+5. Rebuild app: \`eas build --platform all\`
+
+#### New Features to Configure
+- Multi-language support (optional)
+- Social sharing (configure share URLs)
+- Updated color scheme (customize in Colors.ts)
+
+### From 1.x to 2.0.0
+
+#### Breaking Changes
+- Navigation structure changed to React Navigation 6.x
+- Dark mode requires theme setup
+
+#### Required Updates
+1. Update dependencies: \`npm install\`
+2. Update navigation imports
+3. Add dark mode colors to Colors.ts
+4. Rebuild app
+
+---
+
+## Deprecation Notices
+
+### Version 3.0.0
+- No deprecations in this version
+
+### Version 2.0.0
+- React Navigation 5.x support will be removed in v4.0.0
+- Expo SDK 49 is minimum supported version
+
+---
+
+## Known Issues
+
+### Version 3.0.0
+- **iOS 12.x**: Some animations may appear slower on older devices (optimization in progress)
+- **Android 5.x**: Dark mode transition may have minor visual glitches
+- **Workaround**: Restart app after changing language for full effect
+
+### Planned Fixes
+These issues will be addressed in upcoming minor releases:
+- Further optimization for iOS 12
+- Dark mode transition smoothness on Android 5-6
+- Language change instant application
+
+---
+
+## Coming Soon
+
+### Version 3.1.0 (Planned)
+- Apple Sign-In integration
+- Facebook login
+- Enhanced property comparison
+- Saved payment methods
+- AR room preview (iOS 13+)
+- Improved accessibility
+- More currency options
+
+### Version 3.2.0 (Planned)
+- Advanced host analytics
+- Dynamic pricing suggestions
+- Multi-property booking
+- Split payments
+- Group bookings
+- Enhanced calendar management
+
+---
+
+## Support
+
+For questions about updates or specific versions:
+
+📧 Email: support@webpenter.com
+🔖 Purchase Code: Required for support
+📚 Documentation: See /documentation folder
+
+---
+
+## License
+
+All versions are subject to the ThemeForest license terms.
+
+- Regular License: Single use
+- Extended License: Multiple/SaaS use
+
+See LICENSE.txt for full terms.
+
+
     `
   },
   submission: {
@@ -6801,32 +8136,670 @@ All notable changes to the BookHere Documentation Hub will be documented in this
         content: `
 # Google Play Store Submission Checklist
 
-Follow this checklist to ensure a smooth submission process for the Android version of your app.
+This comprehensive checklist will guide you through preparing and submitting your BookHere app to the Google Play Store.
+
+## Table of Contents
+
+1. [Pre-Submission Setup](#pre-submission-setup)
+2. [Environment Variables & API Keys](#environment-variables--api-keys)
+3. [App Configuration](#app-configuration)
+4. [Build & Testing](#build--testing)
+5. [Store Listing Assets](#store-listing-assets)
+6. [Google Play Console Setup](#google-play-console-setup)
+7. [Final Checks](#final-checks)
+8. [Submission](#submission)
 
 ---
 
-## 1. Preparation
-- [ ] **Developer Account**: Ensure you have a Google Play Developer account ($25 one-time fee).
-- [ ] **App Name**: Finalize your app's display name (max 50 characters).
-- [ ] **Package Name**: Verify \`com.yourcompany.yourapp\` is unique and matches \`app.json\`.
+## Pre-Submission Setup
 
-## 2. Assets & Metadata
-- [ ] **App Icon**: 512x512px PNG (32-bit).
-- [ ] **Feature Graphic**: 1024x500px JPG or 24-bit PNG.
-- [ ] **Screenshots**: At least 2-8 screenshots for Phone, 7-inch Tablet, and 10-inch Tablet.
-- [ ] **Descriptions**: Short description (80 chars) and Full description (4000 chars).
-- [ ] **Privacy Policy**: Hosted URL for your app's privacy policy.
+### 1. Google Play Developer Account
 
-## 3. Technical Requirements
-- [ ] **Production Build**: Generate a signed Android App Bundle (AAB) using \`eas build --platform android --profile production\`.
-- [ ] **Permissions**: Ensure all requested permissions are necessary and documented.
-- [ ] **Target API Level**: Ensure the app targets the latest Android API level (usually 34+).
+- [ ] Create a Google Play Developer account ($25 one-time fee)
+- [ ] Complete identity verification
+- [ ] Set up payment profile (for paid apps or in-app purchases)
+- [ ] Accept Google Play Developer Distribution Agreement
 
-## 4. Submission
-- [ ] **Content Rating**: Complete the content rating questionnaire.
-- [ ] **App Access**: Provide login credentials if your app requires authentication.
-- [ ] **Internal/Production Track**: Upload the AAB to the Production track.
-- [ ] **Review**: Submit for review (usually takes 1-3 days).
+**URL:** https://play.google.com/console/signup
+
+---
+
+## Environment Variables & API Keys
+
+### 2. Production Environment Variables
+
+#### 2.1 Get Production SHA-1 Certificate
+
+- [ ] Create your app in Google Play Console
+- [ ] Opt in to Google Play App Signing (recommended)
+- [ ] Go to: **Google Play Console → Your App → Setup → App Signing**
+- [ ] Copy the **SHA-1 certificate fingerprint** (under "App signing key certificate")
+
+#### 2.2 Configure Google Cloud Console
+
+Go to: https://console.cloud.google.com/apis/credentials
+
+##### Google OAuth (Sign-In)
+
+- [ ] Create **Android OAuth 2.0 Client ID**:
+  - Package name: \`com.webpenter.googlesignin\`
+  - SHA-1 fingerprint: [Paste production SHA-1 from step 2.1]
+  - Copy the Client ID
+
+- [ ] Create **iOS OAuth 2.0 Client ID** (if not already created):
+  - Bundle ID: \`com.webpenter.googlesignin\`
+  - Copy the Client ID
+
+- [ ] Create **Web OAuth 2.0 Client ID** (if not already created):
+  - Copy the Client ID
+
+##### Google Maps API
+
+- [ ] Create a **production API key** (or use existing)
+- [ ] Restrict the key:
+  - Application restrictions: **Android apps**
+  - Add package name: \`com.webpenter.googlesignin\`
+  - Add SHA-1 fingerprint: [Paste production SHA-1]
+- [ ] Enable required APIs:
+  - [ ] Maps SDK for Android
+  - [ ] Places API (if used)
+  - [ ] Geocoding API (if used)
+
+#### 2.3 Configure Firebase Console
+
+Go to: https://console.firebase.google.com/
+
+- [ ] Open your Firebase project
+- [ ] Go to **Project Settings**
+- [ ] Add production SHA-1 certificate fingerprint
+- [ ] Download new **google-services.json** for Android
+- [ ] Replace the file in your project root: \`/ google - services.json\`
+
+#### 2.4 Update Production Environment File
+
+Edit: \`/ Users / apple / homey - mobile - apps - react /.env.production\`
+
+\`\`\`bash
+# Production Environment Variables
+
+# Google OAuth Client IDs(REPLACE WITH YOUR PRODUCTION VALUES)
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=YOUR_PRODUCTION_IOS_CLIENT_ID.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=YOUR_PRODUCTION_ANDROID_CLIENT_ID.apps.googleusercontent.com
+
+# Google Maps API Key(Production)
+GOOGLE_MAPS_API_KEY=YOUR_PRODUCTION_GOOGLE_MAPS_API_KEY
+
+# App Configuration
+APP_VARIANT=production
+          \`\`\`
+
+- [ ] Replace all \`YOUR_PRODUCTION_*\` placeholders with actual values from steps 2.2 and 2.3
+- [ ] Save the file
+- [ ] **DO NOT commit this file to git** (already in .gitignore)
+
+---
+
+## App Configuration
+
+### 3. Update App Version
+
+Edit: \`app.config.js\`
+
+- [ ] Update version number: \`version: "3.0.0"\` → \`"X.Y.Z"\`
+- [ ] Update Android versionCode: \`versionCode: 10\` → increment by 1 (e.g., \`11\`)
+- [ ] Update iOS buildNumber: \`buildNumber: "10"\` → increment by 1 (e.g., \`"11"\`)
+
+**Version Guidelines:**
+- Major version (X): Breaking changes
+- Minor version (Y): New features
+- Patch version (Z): Bug fixes
+- versionCode: Must increment with each release (used by Google Play)
+
+### 4. App Bundle Identifier
+
+Verify in \`app.config.js\`:
+
+\`\`\`javascript
+android: {
+        package: "com.webpenter.googlesignin",  // Must match Google Cloud Console
+        versionCode: 11,
+        // ...
+      }
+        \`\`\`
+
+- [ ] Confirm package name matches all Google services configurations
+
+### 5. App Permissions
+
+Review in \`app.config.js\` (android.permissions):
+
+- [ ] Remove any unnecessary permissions
+- [ ] Ensure required permissions are present:
+  - \`android.permission.INTERNET\`
+  - \`android.permission.USE_BIOMETRIC\` (if using biometric auth)
+  - \`android.permission.RECORD_AUDIO\` (if using audio features)
+
+---
+
+## Build & Testing
+
+### 6. Build Production APK/AAB
+
+#### 6.1 Clean Build
+
+\`\`\`bash
+# Remove old builds
+rm - rf node_modules
+rm - rf.expo
+
+# Reinstall dependencies
+npm install
+\`\`\`
+
+#### 6.2 Create Production Build
+
+\`\`\`bash
+# Build Android App Bundle(AAB) for production
+eas build--platform android--profile production
+  \`\`\`
+
+**Build Configuration:**
+- EAS will automatically use \`.env.production\` values (configured in \`eas.json\`)
+- Build will create an \`.aab\` file (Android App Bundle)
+- Wait for build to complete (check status at: https://expo.dev)
+
+#### 6.3 Download Build
+
+- [ ] Go to https://expo.dev/accounts/[your-account]/projects/bookhere/builds
+- [ ] Download the production \`.aab\` file
+- [ ] Save it to a secure location
+
+### 7. Testing
+
+#### 7.1 Internal Testing
+
+- [ ] Upload \`.aab\` to Google Play Console → Internal Testing track
+- [ ] Add testers (email addresses)
+- [ ] Test all core features:
+  - [ ] Google Sign-In (production credentials)
+  - [ ] Google Maps functionality
+  - [ ] Biometric authentication
+  - [ ] Push notifications
+  - [ ] Payment flow (if applicable)
+  - [ ] All navigation and features
+
+#### 7.2 Pre-Launch Report
+
+- [ ] Review Google Play Console Pre-launch report
+- [ ] Fix any crashes or issues found
+- [ ] Re-build and re-test if necessary
+
+---
+
+## Store Listing Assets
+
+### 8. App Icon & Graphics
+
+Verify these files exist and meet requirements:
+
+- [ ] App Icon: \`./ src / assets / images / icon.png\` (512x512px, PNG)
+- [ ] Feature Graphic: Required (1024x500px) - **CREATE THIS**
+- [ ] Screenshots: See [SCREENSHOTS_GUIDE.md](./SCREENSHOTS_GUIDE.md)
+
+#### 8.1 Feature Graphic
+
+**Requirements:**
+- Size: 1024 x 500 pixels
+- Format: PNG or JPEG
+- Max file size: 1024 KB
+
+**Create using:**
+- Figma, Canva, or design tool of your choice
+- Should showcase your app's key feature or branding
+- No device frames needed
+
+**Reference:** \`documentation / SCREENSHOTS_GUIDE.md\` for design guidance
+
+#### 8.2 Screenshots
+
+**Requirements:**
+- At least 2 screenshots
+- Recommended: 4-8 screenshots
+- Format: PNG or JPEG
+- Dimensions: See guide below
+
+**Phone Screenshots:**
+- Min: 320px on short side
+- Max: 3840px on long side
+- Recommended: 1080 x 1920 (portrait) or 1920 x 1080 (landscape)
+
+**Tablet Screenshots (optional but recommended):**
+- Min: 1200px on short side
+- Recommended: 1920 x 1200 or 2560 x 1800
+
+**Screenshot Content:**
+- [ ] Home screen
+- [ ] Property listing
+- [ ] Booking flow
+- [ ] User profile
+- [ ] Maps/location feature
+- [ ] Additional key features
+
+**Tool:** Use Figma templates from \`documentation / SCREENSHOTS_GUIDE.md\`
+
+---
+
+## Google Play Console Setup
+
+### 9. Create App Listing
+
+Go to: https://play.google.com/console/
+
+#### 9.1 Create New App
+
+- [ ] Click "Create app"
+- [ ] App name: **BookHere** (or your custom name)
+- [ ] Default language: **English (United States)**
+- [ ] App or game: **App**
+- [ ] Free or paid: **Free** (or Paid if applicable)
+- [ ] Accept declarations
+
+#### 9.2 Store Listing
+
+**Main Store Listing:**
+
+- [ ] **App name:** BookHere Mobile
+- [ ] **Short description** (80 chars max):
+  \`\`\`
+  Book hotels, apartments, and vacation rentals with ease.
+  \`\`\`
+
+- [ ] **Full description** (4000 chars max):
+  \`\`\`
+  BookHere is your all -in -one mobile solution for discovering and booking accommodations.
+
+  KEY FEATURES:
+  • Browse thousands of properties worldwide
+  • Advanced search with filters(price, location, amenities)
+  • Secure booking and payment processing
+  • Real - time availability and instant confirmation
+  • Interactive maps with Google Maps integration
+  • User reviews and ratings
+  • Favorite properties and booking history
+  • Biometric authentication for secure login
+  • Push notifications for booking updates
+  • Multiple payment options
+
+  SEAMLESS BOOKING EXPERIENCE:
+  Find your perfect stay with our intuitive interface.Search by location, dates, and preferences.
+  View detailed property information, photos, and guest reviews.Book instantly with secure payment processing.
+
+  USER - FRIENDLY FEATURES:
+  • Easy property discovery with smart filters
+  • Save favorite listings for later
+  • Manage bookings in one place
+  • Direct messaging with property owners
+  • Split payments and flexible options
+
+SECURE & RELIABLE:
+  • Biometric authentication(Face ID / Fingerprint)
+  • Secure payment processing with Stripe
+  • Privacy - focused user data protection
+  • 24 / 7 customer support
+
+  Perfect for travelers, vacationers, and business professionals looking for accommodations.
+
+  Download BookHere today and start exploring your next destination!
+  \`\`\`
+
+- [ ] **App icon:** Upload \`icon.png\` (512x512)
+- [ ] **Feature graphic:** Upload feature graphic (1024x500)
+- [ ] **Phone screenshots:** Upload 2-8 screenshots
+- [ ] **Tablet screenshots:** Upload (optional)
+
+**Categorization:**
+
+- [ ] **App category:** Travel & Local
+- [ ] **Tags:** Add up to 5 tags (e.g., "hotel booking", "travel", "vacation rental", "accommodation")
+
+**Contact Details:**
+
+- [ ] **Email:** your-support-email@example.com
+- [ ] **Phone:** (optional) +1-XXX-XXX-XXXX
+- [ ] **Website:** https://your-website.com
+- [ ] **Privacy Policy URL:** **REQUIRED** - https://your-website.com/privacy-policy
+
+> **Important:** You MUST have a privacy policy URL. Create one if you don't have it.
+
+**External Marketing (optional):**
+
+- [ ] Promotional video (YouTube URL)
+- [ ] Marketing opt-in
+
+#### 9.3 Store Settings
+
+**App Access:**
+
+- [ ] All functionality is available without restrictions
+- [ ] OR: Provide instructions for special access/demo account
+
+**Ads:**
+
+- [ ] Select "Yes" or "No" for ads in app
+- [ ] (If applicable) App uses Ads
+
+**Content Rating:**
+
+- [ ] Complete content rating questionnaire
+- [ ] Answer all questions honestly
+- [ ] Expected rating: Everyone or Teen (based on content)
+
+**Target Audience:**
+
+- [ ] Target age: 18 and over (or appropriate for your app)
+- [ ] Store Listing Presence: All countries or select specific countries
+
+**News Apps (if applicable):**
+
+- [ ] Not applicable (unless your app is a news app)
+
+---
+
+### 10. App Content
+
+#### 10.1 Privacy Policy
+
+- [ ] Create privacy policy page on your website
+- [ ] Must cover:
+  - Data collection and usage
+  - Third-party services (Google, Stripe, etc.)
+  - User rights
+  - Contact information
+- [ ] Add URL to store listing
+
+**Sample Privacy Policy Sections:**
+\`\`\`
+  - Information Collection
+    - How We Use Your Information
+      - Data Sharing and Third - party Services
+        - Google Sign - In and OAuth
+          - Payment Processing(Stripe)
+            - Location Services(Google Maps)
+              - Push Notifications
+                - Data Security
+                  - User Rights
+                    - Contact Us
+                      \`\`\`
+
+#### 10.2 Data Safety
+
+Google Play requires detailed information about data handling:
+
+- [ ] Go to **App Content → Data Safety**
+- [ ] Answer questions about:
+  - [ ] Data collection (location, personal info, financial info, etc.)
+  - [ ] Data sharing with third parties
+  - [ ] Security practices (encryption, data deletion)
+  - [ ] COPPA compliance
+
+**Data Collected by BookHere:**
+- Personal info: Name, email, phone
+- Location: Approximate location (for search)
+- Financial info: Payment info (processed by Stripe)
+- Photos: Profile pictures (optional)
+- App activity: Search history, booking history
+
+**Data Shared:**
+- With service providers: Google (auth, maps), Stripe (payments)
+- Not sold to third parties
+
+**Security:**
+- Data encrypted in transit (HTTPS)
+- Data encrypted at rest
+- Users can request deletion
+
+#### 10.3 App Category & Tags
+
+- [ ] **Category:** Travel & Local
+- [ ] **Tags:** hotel, booking, travel, vacation rental, accommodation
+
+---
+
+### 11. Release
+
+#### 11.1 Production Release
+
+- [ ] Go to **Release → Production**
+- [ ] Click "Create new release"
+- [ ] Upload \`.aab\` file from step 6.3
+- [ ] Add release notes:
+
+**Release Notes Example:**
+\`\`\`
+Initial release - BookHere Mobile v3.0.0
+
+NEW FEATURES:
+• Browse and book accommodations worldwide
+• Google Sign - In for quick authentication
+• Interactive maps with property locations
+• Secure payment processing
+• Biometric authentication support
+• Push notifications for booking updates
+• User reviews and ratings
+• Favorite properties and booking history
+
+We're excited to bring you BookHere Mobile! Download now and start exploring your next destination.
+  \`\`\`
+
+- [ ] Review release (click "Review release")
+- [ ] Check for any warnings or errors
+- [ ] Fix any issues before proceeding
+
+#### 11.2 Countries & Regions
+
+- [ ] Select countries/regions for distribution
+  - All countries (default)
+  - OR: Select specific countries
+
+#### 11.3 Rollout Percentage (optional)
+
+- [ ] Start with staged rollout (e.g., 10%, 50%, 100%)
+- [ ] OR: Release to 100% immediately
+
+---
+
+## Final Checks
+
+### 12. Pre-Submission Checklist
+
+Before clicking "Submit for Review":
+
+**App Quality:**
+- [ ] App has been tested thoroughly
+- [ ] No crashes or critical bugs
+- [ ] All features work as expected
+- [ ] Google Sign-In works with production credentials
+- [ ] Google Maps displays correctly
+- [ ] Payments process successfully (test mode OK for initial release)
+
+**Store Listing:**
+- [ ] App name is correct
+- [ ] Descriptions are clear and compelling
+- [ ] Screenshots showcase key features
+- [ ] Feature graphic looks professional
+- [ ] Contact details are accurate
+- [ ] Privacy policy URL is live and accessible
+
+**Compliance:**
+- [ ] Content rating completed
+- [ ] Data safety form completed
+- [ ] Privacy policy covers all data collection
+- [ ] App complies with Google Play policies
+- [ ] No copyright or trademark violations
+
+**Technical:**
+- [ ] Correct package name (\`com.webpenter.googlesignin\`)
+- [ ] Version code incremented
+- [ ] Production environment variables configured
+- [ ] google-services.json is production version
+- [ ] App signed with correct keystore
+
+**Legal:**
+- [ ] Developer Distribution Agreement accepted
+- [ ] Content guidelines reviewed
+- [ ] No restricted content (see policies)
+
+---
+
+## Submission
+
+### 13. Submit for Review
+
+- [ ] Go to **Publishing overview**
+- [ ] Review all sections (should show green checkmarks)
+- [ ] Click **"Send X items for review"**
+- [ ] Wait for Google review (typically 1-7 days)
+
+### 14. Post-Submission
+
+#### Monitor Review Status:
+
+- [ ] Check Google Play Console daily
+- [ ] Respond to any review requests promptly
+- [ ] Fix issues if rejected and resubmit
+
+#### After Approval:
+
+- [ ] App will be live on Google Play Store
+- [ ] Share store listing URL: \`https://play.google.com/store/apps/details?id=com.webpenter.googlesignin\`
+-[] Monitor user reviews and ratings
+  - [] Respond to user feedback
+    - [] Plan updates and improvements
+
+---
+
+## Additional Resources
+
+### Development Commands
+
+  \`\`\`bash
+# Local development build
+npm start
+
+# Preview build (development environment)
+eas build --platform android --profile preview
+
+# Production build (production environment)
+eas build --platform android --profile production
+
+# Check build status
+eas build:list
+
+# View credentials
+eas credentials -p android
+\`\`\`
+
+### Environment Management
+
+  ** Development:**
+    \`\`\`bash
+# Uses .env.development automatically
+npm start
+eas build --platform android --profile development
+\`\`\`
+
+    ** Production:**
+      \`\`\`bash
+# Uses .env.production automatically
+eas build --platform android --profile production
+\`\`\`
+
+### Useful Links
+
+  - ** Google Play Console:** https://play.google.com/console/
+- ** Google Cloud Console:** https://console.cloud.google.com/
+- ** Firebase Console:** https://console.firebase.google.com/
+- ** Expo Dashboard:** https://expo.dev/
+- ** Google Play Policies:** https://play.google.com/about/developer-content-policy/
+- ** App Quality Guidelines:** https://developer.android.com/quality
+
+### Support
+
+For issues or questions:
+- ** Documentation:** See\`documentation/\` folder
+  - ** Troubleshooting:** \`documentation/TROUBLESHOOTING.md\`
+    - ** Configuration:** \`documentation/CONFIGURATION.md\`
+      - ** Email:** support@webpenter.com
+
+---
+
+## Troubleshooting Common Issues
+
+### "App not configured for OAuth"
+
+  ** Issue:** Google Sign - In fails in production
+
+    ** Solution:**
+      1. Verify SHA - 1 certificate in Google Cloud Console
+2. Ensure production OAuth client ID is correct in \`.env.production\`
+3. Check Firebase console has production SHA - 1
+4. Re - download\`google-services.json\` if needed
+
+### "Google Maps not displaying"
+
+  ** Issue:** Maps show blank or "For development purposes only"
+
+    ** Solution:**
+      1. Check Google Maps API key in \`.env.production\`
+2. Verify API key restrictions in Google Cloud Console
+3. Ensure Maps SDK for Android is enabled
+4. Add production SHA - 1 to API key restrictions
+
+### "App rejected for policy violation"
+
+  ** Issue:** Google rejects app submission
+
+    ** Solution:**
+      1. Review rejection email carefully
+2. Check Google Play policies: https://play.google.com/about/developer-content-policy/
+3. Common issues:
+- Missing or inadequate privacy policy
+  - Incomplete data safety section
+    - Copyright / trademark issues
+      - Misleading content or functionality
+4. Fix issues and resubmit
+
+### "Build fails during EAS build"
+
+  ** Issue:** Production build fails
+
+    ** Solution:**
+      1. Check build logs in Expo dashboard
+2. Verify all dependencies are installed
+3. Ensure \`google-services.json\` is in project root
+4. Check environment variables are set correctly
+5. Try clearing cache: \`eas build --platform android --profile production --clear-cache\`
+
+---
+
+## Version History
+
+  | Version | Date | Changes |
+| ---------| ------| ---------|
+| 3.0.0 | 2024 - XX - XX | Initial release |
+| 3.0.1 | TBD | Bug fixes and improvements |
+
+  ---
+
+** Last Updated:** 2026-01 -08
+  ** Author:** WebPenter Development Team
+
+For ThemeForest buyers: This checklist is specifically tailored for the BookHere Mobile App.Follow all steps carefully to ensure a smooth submission process.
+
+Good luck with your Google Play Store submission! 🚀
+
+
 `
       },
       app_store: {
@@ -6836,30 +8809,1151 @@ Follow this checklist to ensure a smooth submission process for the Android vers
         content: `
 # Apple App Store Submission Checklist
 
-Follow this checklist to ensure your iOS app meets Apple's strict submission guidelines.
+This comprehensive checklist will guide you through preparing and submitting your BookHere app to the Apple App Store.
+
+## Table of Contents
+
+1. [Pre-Submission Setup](#pre-submission-setup)
+2. [Apple Developer Account Setup](#apple-developer-account-setup)
+3. [Certificates & Provisioning](#certificates--provisioning)
+4. [Environment Variables & API Keys](#environment-variables--api-keys)
+5. [App Configuration](#app-configuration)
+6. [Build & Testing](#build--testing)
+7. [TestFlight Beta Testing](#testflight-beta-testing)
+8. [Store Listing Assets](#store-listing-assets)
+9. [App Store Connect Setup](#app-store-connect-setup)
+10. [Final Checks](#final-checks)
+11. [Submission](#submission)
+12. [After Submission](#after-submission)
 
 ---
 
-## 1. Preparation
-- [ ] **Developer Account**: Ensure you have an active Apple Developer Program membership ($99/year).
-- [ ] **App Name**: Finalize your app name (max 30 characters).
-- [ ] **Bundle ID**: Verify your Bundle Identifier matches \`app.json\`.
+## Pre-Submission Setup
 
-## 2. Assets & Metadata
-- [ ] **App Icon**: 1024x1024px PNG (no transparency).
-- [ ] **Screenshots**: Required for 6.5" (iPhone 15/14/13 Pro Max) and 5.5" (iPhone 8 Plus) displays.
-- [ ] **Keywords**: Up to 100 characters of comma-separated keywords.
-- [ ] **Support URL**: A URL where users can find support for the app.
+### 1. Requirements
 
-## 3. Technical Requirements
-- [ ] **Production Build**: Generate an IPA using \`eas build --platform ios --profile production\`.
-- [ ] **Upload**: Use Transporter or \`eas submit\` to upload the build to App Store Connect.
-- [ ] **App Privacy**: Complete the "App Privacy" section (Data Types, Tracking).
+Before you begin, ensure you have:
 
-## 4. Submission
-- [ ] **App Review Information**: Provide a demo account (username/password) for Apple reviewers.
-- [ ] **Version Release**: Choose between Manual or Automatic release after approval.
-- [ ] **Submit**: Click "Add for Review" and wait for the status to change to "Waiting for Review".
+- [ ] **Mac computer** (required for iOS development)
+- [ ] **Xcode** installed (latest version from Mac App Store)
+- [ ] **Apple Developer Program** membership ($99/year)
+- [ ] **EAS CLI** installed (\`npm install - g eas- cli\`)
+- [ ] **Expo account** (free at https://expo.dev)
+
+**Time required:** 1-2 hours for initial setup
+
+---
+
+## Apple Developer Account Setup
+
+### 2. Apple Developer Program
+
+#### 2.1 Enroll in Apple Developer Program
+
+- [ ] Go to https://developer.apple.com/programs/enroll/
+- [ ] Choose account type:
+  - **Individual**: Personal apps, sole proprietorship
+  - **Organization**: Company apps, requires D-U-N-S number
+- [ ] Pay $99 annual fee
+- [ ] Wait for approval (typically 24-48 hours)
+
+#### 2.2 Verify Enrollment
+
+- [ ] Log in to https://developer.apple.com/account
+- [ ] Confirm enrollment status shows "Active"
+- [ ] Note your Team ID (needed later)
+
+#### 2.3 Two-Factor Authentication
+
+- [ ] Enable 2FA on your Apple ID (required)
+- [ ] Go to https://appleid.apple.com
+- [ ] Security → Two-Factor Authentication
+- [ ] Add trusted phone number
+
+---
+
+## Certificates & Provisioning
+
+### 3. App Identifiers & Bundle ID
+
+#### 3.1 Create App ID
+
+Go to: https://developer.apple.com/account/resources/identifiers/list
+
+- [ ] Click the "+" button to create new identifier
+- [ ] Select "App IDs" → Continue
+- [ ] Select "App" → Continue
+- [ ] Fill in details:
+  - **Description**: BookHere Mobile App
+  - **Bundle ID**: \`com.webpenter.googlesignin\` (must match app.config.js)
+  - **Explicit Bundle ID** (not wildcard)
+- [ ] Enable capabilities:
+  - [ ] Push Notifications
+  - [ ] Sign in with Apple (if using)
+  - [ ] Associated Domains (if using deep links)
+  - [ ] In-App Purchase (if applicable)
+- [ ] Click "Continue" → "Register"
+
+**Important:** Bundle ID must match exactly: \`com.webpenter.googlesignin\`
+
+#### 3.2 EAS Managed Credentials (Recommended)
+
+Let EAS handle certificates automatically:
+
+\`\`\`bash
+# EAS will create certificates during first build
+eas build --platform ios --profile production
+
+# EAS will prompt:
+# ✔ Generate a new Apple Distribution Certificate
+# ✔ Generate a new Apple Provisioning Profile
+  \`\`\`
+
+**Advantages:**
+- Automatic certificate management
+- No manual certificate creation
+- Secure storage in Expo servers
+- Easy renewal
+
+#### 3.3 Manual Certificate Setup (Advanced)
+
+If you prefer manual control:
+
+**Create Distribution Certificate:**
+
+\`\`\`bash
+# View and manage certificates
+eas credentials - p ios
+
+# Select:
+# → Set up a new iOS Distribution Certificate
+# → Generate new certificate
+# Or: Upload existing.p12 certificate
+  \`\`\`
+
+**Create Provisioning Profile:**
+
+- [ ] Go to https://developer.apple.com/account/resources/profiles/list
+- [ ] Click "+" to create new profile
+- [ ] Select "App Store" → Continue
+- [ ] Select your App ID → Continue
+- [ ] Select your Distribution Certificate → Continue
+- [ ] Name it: "BookHere App Store Distribution"
+- [ ] Download the profile
+
+---
+
+## Environment Variables & API Keys
+
+### 4. Production Environment Variables
+
+#### 4.1 iOS-Specific Configuration
+
+Edit: \`/ Users / apple / homey - mobile - apps - react /.env.production\`
+
+\`\`\`bash
+# iOS OAuth Client ID(from Google Cloud Console)
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID = YOUR_PRODUCTION_IOS_CLIENT_ID.apps.googleusercontent.com
+
+# Web Client ID(for iOS Google Sign - In)
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
+
+# Google Maps API Key(iOS)
+GOOGLE_MAPS_API_KEY = YOUR_PRODUCTION_IOS_GOOGLE_MAPS_API_KEY
+
+# App Configuration
+APP_VARIANT = production
+  \`\`\`
+
+#### 4.2 Get iOS OAuth Client ID
+
+Go to: https://console.cloud.google.com/apis/credentials
+
+- [ ] Click "Create Credentials" → "OAuth 2.0 Client ID"
+- [ ] Application type: **iOS**
+- [ ] Name: "BookHere iOS Production"
+- [ ] Bundle ID: \`com.webpenter.googlesignin\`
+- [ ] Click "Create"
+- [ ] Copy the Client ID
+- [ ] Paste into \`.env.production\` as \`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID\`
+
+#### 4.3 Configure Google Maps for iOS
+
+**Create or Update API Key:**
+
+- [ ] Go to https://console.cloud.google.com/google/maps-apis/credentials
+- [ ] Create new API key or use existing
+- [ ] Click "Restrict Key"
+- [ ] Application restrictions: **iOS apps**
+- [ ] Add bundle identifier: \`com.webpenter.googlesignin\`
+- [ ] API restrictions: Select APIs:
+  - [ ] Maps SDK for iOS
+  - [ ] Places API (if used)
+  - [ ] Geocoding API (if used)
+- [ ] Save
+- [ ] Copy API key to \`.env.production\`
+
+#### 4.4 Update GoogleService-Info.plist (iOS Firebase)
+
+If using Firebase for iOS:
+
+- [ ] Go to https://console.firebase.google.com/
+- [ ] Select your project
+- [ ] Add iOS app (if not already added):
+  - iOS bundle ID: \`com.webpenter.googlesignin\`
+  - App nickname: "BookHere iOS"
+  - App Store ID: (leave blank for now)
+- [ ] Download **GoogleService-Info.plist**
+- [ ] Replace file in project root: \`/ GoogleService - Info.plist\`
+
+**Verify file location:**
+\`\`\`bash
+ls - la GoogleService - Info.plist
+# Should be in project root
+  \`\`\`
+
+---
+
+## App Configuration
+
+### 5. Update App Configuration
+
+#### 5.1 Version and Build Numbers
+
+Edit: \`app.config.js\`
+
+\`\`\`javascript
+ios: {
+  supportsTablet: true,
+    bundleIdentifier: "com.webpenter.googlesignin",
+      buildNumber: "10",  // Increment for each submission
+  // ...
+}
+\`\`\`
+
+**Important Version Rules:**
+- **buildNumber**: Must be unique for each build uploaded to App Store Connect
+  - Format: Integer as string (e.g., "1", "2", "3")
+  - Increment by 1 for each submission
+  - Never reuse a build number
+- **version**: User-facing version (e.g., "3.0.0")
+  - Use semantic versioning: MAJOR.MINOR.PATCH
+  - Can be the same across multiple builds
+
+**Example progression:**
+\`\`\`
+Submission 1: version "3.0.0", buildNumber "10"
+Submission 2: version "3.0.0", buildNumber "11"(bug fix, same version)
+Submission 3: version "3.0.1", buildNumber "12"(new version)
+  \`\`\`
+
+#### 5.2 App Capabilities
+
+Verify in \`app.config.js\`:
+
+\`\`\`javascript
+ios: {
+  infoPlist: {
+    NSFaceIDUsageDescription: "Allow BookHere Mobile to use Face ID for secure login.",
+      NSLocationWhenInUseUsageDescription: "We need your location to show properties near you.",
+        NSPhotoLibraryUsageDescription: "We need access to your photos to upload property images.",
+          NSCameraUsageDescription: "We need camera access to take photos of properties.",
+            ITSAppUsesNonExemptEncryption: false,
+  },
+  // ...
+}
+\`\`\`
+
+**Required Usage Descriptions:**
+- [ ] Face ID / Touch ID (if using biometrics)
+- [ ] Location (if using maps/location)
+- [ ] Photo Library (if users upload photos)
+- [ ] Camera (if users take photos)
+- [ ] Notifications (if using push notifications)
+
+#### 5.3 Privacy Manifest (iOS 17+)
+
+For iOS 17+, you may need a privacy manifest. EAS handles this automatically, but verify:
+
+- [ ] App uses encryption: Set \`ITSAppUsesNonExemptEncryption: false\` (unless using custom encryption)
+- [ ] Declare required reason APIs (EAS/Expo handles this)
+
+---
+
+## Build & Testing
+
+### 6. Build Production IPA
+
+#### 6.1 Pre-Build Checklist
+
+- [ ] \`.env.production\` configured with production credentials
+- [ ] \`app.config.js\` version and buildNumber updated
+- [ ] \`GoogleService - Info.plist\` in project root (if using Firebase)
+- [ ] All API keys are production keys
+- [ ] Test locally first: \`npm start\`
+
+#### 6.2 Build with EAS
+
+\`\`\`bash
+# Build for App Store submission
+eas build--platform ios--profile production
+
+# EAS will:
+# 1. Load.env.production variables
+# 2. Create / use distribution certificate
+# 3. Create / use provisioning profile
+# 4. Build IPA file
+# 5. Upload to Expo servers
+  \`\`\`
+
+**Build Process:**
+- Takes 10-25 minutes
+- Builds on Expo's macOS servers
+- No local Mac required during build
+- Build status visible at: https://expo.dev
+
+#### 6.3 Monitor Build
+
+\`\`\`bash
+# Check build status
+eas build: list--platform ios
+
+# View specific build
+eas build: view[build - id]
+
+# Or monitor in browser
+# https://expo.dev/accounts/[account]/projects/bookhere/builds
+\`\`\`
+
+#### 6.4 Download Build (Optional)
+
+\`\`\`bash
+# Download IPA file
+eas build: download--platform ios--profile production
+
+# IPA file downloaded to current directory
+# production - [timestamp].ipa
+  \`\`\`
+
+---
+
+## TestFlight Beta Testing
+
+### 7. Internal Testing with TestFlight
+
+#### 7.1 Automatic Submission to TestFlight
+
+After build completes:
+
+\`\`\`bash
+# Submit to TestFlight automatically
+eas submit--platform ios--latest
+
+# Or specify build ID
+eas submit--platform ios--id[build - id]
+  \`\`\`
+
+**EAS will:**
+1. Upload IPA to App Store Connect
+2. Process build (takes 5-15 minutes)
+3. Make available in TestFlight
+
+#### 7.2 Manual Upload (Alternative)
+
+If not using \`eas submit\`:
+
+1. Download IPA: \`eas build: download--platform ios--profile production\`
+2. Open **Transporter** app (Mac)
+3. Sign in with Apple Developer account
+4. Drag and drop IPA file
+5. Click "Deliver"
+6. Wait for processing
+
+#### 7.3 Add TestFlight Testers
+
+Go to: https://appstoreconnect.apple.com
+
+- [ ] Select your app
+- [ ] Go to **TestFlight** tab
+- [ ] Click on the build version
+- [ ] Add **Internal Testers**:
+  - Up to 100 testers (must be in App Store Connect)
+  - Add email addresses
+  - They receive invitation automatically
+- [ ] Or add **External Testers** (requires Beta App Review):
+  - Up to 10,000 testers
+  - Public link or email invitations
+  - Must pass Beta App Review (1-2 days)
+
+#### 7.4 Test with TestFlight
+
+- [ ] Testers install TestFlight app from App Store
+- [ ] Testers open invitation email and accept
+- [ ] Install BookHere app via TestFlight
+- [ ] Test all features:
+  - [ ] Google Sign-In
+  - [ ] Google Maps
+  - [ ] Biometric authentication
+  - [ ] Push notifications
+  - [ ] Payment flow
+  - [ ] All core features
+
+---
+
+## Store Listing Assets
+
+### 8. App Icon & Graphics
+
+#### 8.1 App Icon
+
+- [ ] **Size**: 1024x1024 pixels
+- [ ] **Format**: PNG (no alpha channel)
+- [ ] **Location**: \`./ src / assets / images / icon.png\`
+- [ ] **Requirements**:
+  - No rounded corners (Apple adds them)
+  - No transparency
+  - RGB color space
+  - 72 DPI minimum
+
+**Verify in app.config.js:**
+\`\`\`javascript
+icon: "./src/assets/images/icon.png"
+  \`\`\`
+
+#### 8.2 Screenshots
+
+**Required Sizes:**
+
+Must provide screenshots for at least one device size:
+
+**6.7" Display (iPhone 15 Pro Max, 14 Pro Max, etc.):**
+- [ ] Size: **1290 x 2796 pixels** (portrait) or **2796 x 1290** (landscape)
+- [ ] Minimum: 2 screenshots
+- [ ] Recommended: 4-8 screenshots
+
+**6.5" Display (iPhone 11 Pro Max, XS Max, etc.):**
+- [ ] Size: **1284 x 2778 pixels** (portrait)
+- [ ] Fallback for older devices
+
+**5.5" Display (iPhone 8 Plus, 7 Plus, etc.):**
+- [ ] Size: **1242 x 2208 pixels** (portrait)
+- [ ] Optional but recommended for compatibility
+
+**iPad Pro (12.9-inch) - Optional but recommended:**
+- [ ] Size: **2048 x 2732 pixels** (portrait)
+- [ ] Shows app supports tablets
+
+**Screenshot Content:**
+- [ ] Home screen with property listings
+- [ ] Property detail page
+- [ ] Booking flow
+- [ ] User profile
+- [ ] Maps and location features
+- [ ] Search and filters
+- [ ] Key features showcase
+
+**Tools:**
+- Use Figma templates from \`documentation / SCREENSHOTS_GUIDE.md\`
+- iOS Simulator (Xcode → Simulator → Cmd+S to screenshot)
+- Third-party tools: Screenshot Creator, App Mockup, etc.
+
+#### 8.3 App Preview Video (Optional)
+
+- [ ] Duration: 15-30 seconds
+- [ ] Format: M4V, MP4, or MOV
+- [ ] Resolution: Match screenshot dimensions
+- [ ] Size: Up to 500 MB
+- [ ] Shows key features and UI flow
+
+---
+
+## App Store Connect Setup
+
+### 9. Create App in App Store Connect
+
+Go to: https://appstoreconnect.apple.com
+
+#### 9.1 Create New App
+
+- [ ] Click "+" → "New App"
+- [ ] Platforms: **iOS**
+- [ ] Name: **BookHere** (or your custom name, 30 chars max)
+- [ ] Primary Language: **English (U.S.)**
+- [ ] Bundle ID: Select \`com.webpenter.googlesignin\`
+- [ ] SKU: \`bookhere - ios\` (unique identifier for your records)
+- [ ] User Access: **Full Access**
+- [ ] Click "Create"
+
+#### 9.2 App Information
+
+**General Information:**
+
+- [ ] **App Name**: BookHere Mobile (30 chars max)
+- [ ] **Subtitle**: Book Hotels & Vacation Rentals (30 chars max)
+- [ ] **Category**:
+  - Primary: **Travel**
+  - Secondary: **Lifestyle** (optional)
+
+**Age Rating:**
+
+- [ ] Click "Edit" next to Age Rating
+- [ ] Answer questionnaire honestly:
+  - Unrestricted Web Access: No
+  - Gambling: No
+  - Contests: No
+  - etc.
+- [ ] Expected rating: **4+** or **12+**
+- [ ] Click "Done"
+
+#### 9.3 Pricing and Availability
+
+- [ ] **Price**: Free (or set price if paid app)
+- [ ] **Availability**: All countries/regions
+  - Or select specific countries
+- [ ] **Pre-Order**: No (for initial release)
+
+#### 9.4 App Privacy
+
+**Required since iOS 14.5:**
+
+- [ ] Click "Get Started" under App Privacy
+- [ ] Answer questions about data collection:
+
+**Data Collection:**
+- [ ] **Contact Info**: Email, Name, Phone (collected)
+- [ ] **Location**: Approximate location (collected for search)
+- [ ] **Identifiers**: User ID (collected)
+- [ ] **Usage Data**: Product interactions (collected)
+- [ ] **Financial Info**: Payment info (collected, processed by Stripe)
+- [ ] **User Content**: Photos (optional, for profile/listings)
+
+**Data Use:**
+- [ ] App Functionality
+- [ ] Analytics
+- [ ] Product Personalization
+- [ ] Other Purposes: Third-party services (Google, Stripe)
+
+**Data Linking:**
+- [ ] Data is linked to user identity: **Yes**
+
+**Data Tracking:**
+- [ ] Does this app use data for tracking?: **No** (unless you use advertising)
+
+**Save and Publish Privacy Policy**
+
+#### 9.5 Version Information
+
+Click on "1.0 Prepare for Submission":
+
+**Promotional Text** (170 chars, updatable without review):
+\`\`\`
+Discover and book amazing accommodations worldwide.Secure payments, instant confirmation, and seamless booking experience.
+\`\`\`
+
+**Description** (4000 chars):
+\`\`\`
+BookHere is your all -in -one mobile solution for discovering and booking accommodations worldwide.
+
+KEY FEATURES
+
+Browse & Discover
+• Thousands of properties: hotels, apartments, vacation rentals
+• Advanced search with smart filters(price, location, amenities)
+• Interactive maps powered by Google Maps
+• High - quality photos and detailed descriptions
+• User reviews and ratings
+
+Seamless Booking
+• Real - time availability checking
+• Instant booking confirmation
+• Secure payment processing with Stripe
+• Multiple payment options
+• Transparent pricing with no hidden fees
+
+User Features
+• Face ID / Touch ID for secure login
+• Save favorite properties
+• Booking history and management
+• Push notifications for booking updates
+• In - app messaging with hosts
+• Multi - language support
+
+For Hosts
+• Easy property listing management
+• Reservation management
+• Calendar synchronization
+• Earnings tracking
+• Guest communication
+
+Security & Privacy
+• Biometric authentication
+• Secure payment processing
+• Privacy - focused design
+• Bank - level encryption
+
+PERFECT FOR
+
+• Vacationers seeking unique stays
+• Business travelers needing accommodations
+• Adventure seekers exploring new destinations
+• Hosts managing rental properties
+
+WHY BOOKHERE ?
+
+✓ User - friendly interface
+✓ Fast and responsive
+✓ Reliable and secure
+✓ 24 / 7 customer support
+✓ Regular updates and improvements
+
+Download BookHere today and start exploring your next destination!
+
+REQUIREMENTS
+• iOS 13.0 or later
+• Internet connection
+• Location services(optional, for nearby properties)
+
+  SUPPORT
+Questions or issues ? Contact us at support @webpenter.com
+
+Follow us:
+• Website: https://your-website.com
+• Facebook: @bookhere
+• Instagram: @bookhere
+
+Start your journey with BookHere – where great stays begin!
+  \`\`\`
+
+**Keywords** (100 chars, comma-separated):
+\`\`\`
+hotel, booking, travel, vacation, rental, accommodation, airbnb, property, stay, lodging
+  \`\`\`
+
+**Support URL**:
+\`\`\`
+https://your-website.com/support
+\`\`\`
+
+**Marketing URL** (optional):
+\`\`\`
+https://your-website.com
+\`\`\`
+
+**Privacy Policy URL** (required):
+\`\`\`
+https://your-website.com/privacy-policy
+\`\`\`
+
+**Build:**
+- [ ] Select the build uploaded via TestFlight
+- [ ] Click the "+" next to Build
+
+**What's New in This Version** (4000 chars):
+\`\`\`
+Welcome to BookHere v3.0.0!
+
+NEW FEATURES
+• Browse thousands of properties worldwide
+• Google Sign - In for quick and secure authentication
+• Interactive maps to explore properties
+• Secure payment processing
+• Biometric authentication(Face ID / Touch ID)
+• Push notifications for booking updates
+• User reviews and ratings
+• Favorite properties and booking history
+• Multi - language support
+
+SEAMLESS EXPERIENCE
+• Intuitive and beautiful user interface
+• Fast property search and filtering
+• Real - time availability checking
+• Instant booking confirmation
+• Easy property management for hosts
+
+We're excited to bring you BookHere! Download now and start exploring amazing accommodations.
+
+Have feedback ? Contact us at support @webpenter.com
+  \`\`\`
+
+#### 9.6 Upload Screenshots
+
+- [ ] Click "+" under "iPhone 6.7" Display"
+- [ ] Upload 2-8 screenshots
+- [ ] Drag to reorder
+- [ ] Repeat for other device sizes (if available)
+- [ ] Upload iPad screenshots (if available)
+
+#### 9.7 App Review Information
+
+**Contact Information:**
+- [ ] First Name: Your Name
+- [ ] Last Name: Your Last Name
+- [ ] Phone Number: +1-XXX-XXX-XXXX
+- [ ] Email: your-email@example.com
+
+**Demo Account** (if app requires login):
+- [ ] Sign-in required: **Yes**
+- [ ] Username: demo@bookhere.com (create demo account)
+- [ ] Password: Demo123! (secure password)
+- [ ] Notes: "Demo account for review purposes. Full access to all features."
+
+**Notes:**
+\`\`\`
+Thank you for reviewing BookHere!
+
+DEMO ACCOUNT CREDENTIALS:
+Email: demo @bookhere.com
+Password: Demo123!
+
+TESTING NOTES:
+- All features are accessible with demo account
+  - Google Sign - In is optional(demo account available)
+    - Payment processing uses Stripe test mode for demo
+      - Test card: 4242 4242 4242 4242
+
+KEY FEATURES TO TEST:
+1. Browse properties
+2. View property details
+3. Use map to explore locations
+4. Add properties to favorites
+5. Simulate booking(test mode)
+
+Please contact support @webpenter.com with any questions.
+\`\`\`
+
+**Attachment** (optional):
+- [ ] Upload demo video or additional documentation if needed
+
+#### 9.8 Version Release
+
+- [ ] **Automatically release this version**: Recommended
+  - App goes live immediately after approval
+- [ ] **Manually release this version**: Alternative
+  - You control when app goes live after approval
+
+---
+
+## Final Checks
+
+### 10. Pre-Submission Checklist
+
+Before clicking "Submit for Review":
+
+**App Quality:**
+- [ ] App tested thoroughly on physical device
+- [ ] No crashes or critical bugs
+- [ ] All features work as expected
+- [ ] Google Sign-In works with production credentials
+- [ ] Google Maps displays correctly
+- [ ] Biometric authentication works
+- [ ] Push notifications work
+- [ ] Payment processing works (test mode OK)
+- [ ] App performs well on older devices
+- [ ] App works on different iOS versions (iOS 13+)
+
+**Store Listing:**
+- [ ] App name is compelling and clear
+- [ ] Subtitle is descriptive
+- [ ] Description showcases key features
+- [ ] Keywords are relevant and optimized
+- [ ] Screenshots showcase app beautifully
+- [ ] App icon is professional
+- [ ] Privacy policy URL is live and accessible
+- [ ] Support URL is live
+
+**Compliance:**
+- [ ] Age rating completed accurately
+- [ ] App Privacy information completed
+- [ ] Privacy policy covers all data collection
+- [ ] App complies with Apple Review Guidelines
+- [ ] No copyright or trademark violations
+- [ ] No misleading functionality
+
+**Technical:**
+- [ ] Correct bundle identifier: \`com.webpenter.googlesignin\`
+- [ ] Build number incremented from previous submission
+- [ ] Version number is appropriate
+- [ ] Production environment variables configured
+- [ ] GoogleService-Info.plist is production version
+- [ ] All required permissions declared in infoPlist
+
+**Legal:**
+- [ ] Apple Developer Agreement accepted
+- [ ] App Review Guidelines reviewed
+- [ ] Export Compliance completed (if applicable)
+
+---
+
+## Submission
+
+### 11. Submit for Review
+
+#### 11.1 Export Compliance
+
+- [ ] **Does your app use encryption?**
+  - Select "No" (standard HTTPS doesn't count)
+  - Or select "Yes" and answer follow-up questions
+
+#### 11.2 Advertising Identifier (IDFA)
+
+- [ ] **Does this app use the Advertising Identifier (IDFA)?**
+  - Select "No" (unless you use advertising/analytics that tracks users)
+
+#### 11.3 Submit
+
+- [ ] Review all sections (should have green checkmarks)
+- [ ] Click **"Add for Review"** (top right)
+- [ ] Click **"Submit to App Review"**
+
+**Confirmation:**
+- [ ] Status changes to "Waiting for Review"
+- [ ] You'll receive confirmation email
+
+---
+
+## After Submission
+
+### 12. Review Process
+
+#### 12.1 Review Timeline
+
+**Typical Timeline:**
+- **Waiting for Review**: 1-3 days
+- **In Review**: Few hours to 1 day
+- **Processing**: Few hours
+- **Total**: Usually 1-4 days
+
+**Status Tracking:**
+- [ ] Monitor status in App Store Connect
+- [ ] Check email for updates
+- [ ] Respond to any review requests within 24 hours
+
+#### 12.2 Possible Outcomes
+
+**Approved ✅**
+- Status: "Ready for Sale"
+- App is live on App Store (if auto-release)
+- Or ready to manually release
+
+**Rejected ❌**
+- Status: "Rejected"
+- Reason provided in Resolution Center
+- Fix issues and resubmit
+
+**Metadata Rejected**
+- Issue with store listing, not app itself
+- Fix metadata and resubmit
+
+**Developer Rejected**
+- You cancelled submission
+- Can resubmit anytime
+
+#### 12.3 If Rejected
+
+Common rejection reasons and solutions:
+
+**1. Incomplete or Inaccurate Information**
+- Solution: Provide accurate app information and demo account
+
+**2. Crashes or Bugs**
+- Solution: Fix bugs, test thoroughly, resubmit
+
+**3. Guideline Violation**
+- Solution: Review specific guideline, fix issue, explain in notes
+
+**4. Privacy Policy Issues**
+- Solution: Update privacy policy to cover all data collection
+
+**5. Misleading Functionality**
+- Solution: Ensure screenshots and description match actual app
+
+**6. Performance Issues**
+- Solution: Optimize app, reduce memory usage
+
+**Resubmission Process:**
+1. Fix issues mentioned in rejection
+2. Update build if code changes needed (increment buildNumber)
+3. Update metadata if needed
+4. Reply in Resolution Center explaining changes
+5. Resubmit for review
+
+#### 12.4 After Approval
+
+**App is Live!**
+
+- [ ] App appears on App Store
+- [ ] App Store URL: \`https://apps.apple.com/app/id[your-app-id]\`
+-[] Share with users
+- [] Announce on social media
+  - [] Update website with App Store badge
+
+    ** Monitor Performance:**
+      -[] Check App Store Connect Analytics
+        - [] Monitor reviews and ratings
+          - [] Respond to user reviews
+            - [] Track crashes(if using crash reporting)
+-[] Plan updates and improvements
+
+  ** Promote Your App:**
+    -[] Add App Store badge to website
+      - [] Share on social media
+        - [] Create press release
+          - [] Reach out to tech blogs
+            - [] Run marketing campaigns
+
+---
+
+## Apple App Store Guidelines
+
+### 13. Important Guidelines to Follow
+
+  ** Review the full guidelines:** https://developer.apple.com/app-store/review/guidelines/
+
+** Key Areas:**
+
+#### Safety
+  - [] User - generated content is moderated
+    - [] Objectionable content is filtered
+      - [] Privacy policy is comprehensive
+
+#### Performance
+  - [] App is complete and functional
+    - [] No crashes, bugs, or broken links
+      - [] Loads quickly and responds to user input
+
+#### Business
+  - [] In - app purchases use Apple's system (if applicable)
+    - [] Subscriptions follow Apple guidelines
+      - [] No alternative payment methods presented in -app
+
+#### Design
+  - [] Interface is polished and professional
+    - [] Uses native iOS components appropriately
+      - [] Supports all device sizes
+
+#### Legal
+  - [] Privacy policy meets requirements
+    - [] Respects intellectual property
+      - [] Follows data protection laws
+
+---
+
+## Troubleshooting Common Issues
+
+### "Could not find a valid bundle identifier"
+
+  ** Issue:** Bundle ID mismatch
+
+    ** Solution:**
+      1. Verify\`bundleIdentifier\` in \`app.config.js\`: \`com.webpenter.googlesignin\`
+2. Ensure App ID exists in Apple Developer Portal
+3. Rebuild app
+
+### "Google Sign-In not working"
+
+  ** Issue:** OAuth configuration for iOS
+
+    ** Solution:**
+      1. Verify iOS Client ID in \`.env.production\`
+2. Check Bundle ID in Google Cloud Console matches\`com.webpenter.googlesignin\`
+3. Ensure \`GoogleService-Info.plist\` is in project root
+
+### "Build failed during EAS build"
+
+  ** Issue:** Build configuration error
+
+    ** Solution:**
+      1. Check build logs: \`eas build:view [build-id]\`
+2. Verify all certificates are valid
+3. Ensure \`GoogleService-Info.plist\` exists if using Firebase
+4. Try: \`eas build --platform ios --profile production --clear-cache\`
+
+### "App crashes on launch"
+
+  ** Issue:** Missing dependencies or configuration
+
+    ** Solution:**
+      1. Test on physical device via TestFlight
+2. Check console logs in Xcode
+3. Verify all environment variables are set
+4. Ensure all required frameworks are linked
+
+### "Rejection: Missing Privacy Policy"
+
+  ** Issue:** Privacy policy not accessible
+
+    ** Solution:**
+      1. Create comprehensive privacy policy page
+2. Ensure URL is publicly accessible
+3. Cover all data collection and usage
+4. Include third - party services(Google, Stripe)
+5. Update in App Store Connect
+
+---
+
+## Version Updates
+
+### 14. Updating Your App
+
+When releasing updates:
+
+#### 14.1 Prepare Update
+
+  - [] Update version in \`app.config.js\`:
+\`\`\`javascript
+  version: "3.0.1",  // Increment version
+  buildNumber: "11",  // Increment build number
+  \`\`\`
+
+  - [] Update \`.env.production\` if credentials changed
+
+#### 14.2 Build New Version
+
+  \`\`\`bash
+# Build new version
+eas build --platform ios --profile production
+
+# Submit to TestFlight
+eas submit --platform ios --latest
+\`\`\`
+
+#### 14.3 Create New Version in App Store Connect
+
+  - [] Go to App Store Connect → Your App
+    - [] Click "+" next to "iOS App"
+      - [] Enter new version number: "3.0.1"
+        - [] Fill in "What's New in This Version"
+          - [] Select new build
+            - [] Submit for review
+
+---
+
+## Useful Commands Reference
+
+### Build Commands
+
+  \`\`\`bash
+# Build for App Store
+eas build --platform ios --profile production
+
+# Build for TestFlight with specific version
+eas build --platform ios --profile production --clear-cache
+
+# Check build status
+eas build:list --platform ios
+
+# View specific build
+eas build:view [build-id]
+
+# Download IPA
+eas build:download --platform ios --profile production
+\`\`\`
+
+### Submission Commands
+
+  \`\`\`bash
+# Submit latest build to TestFlight
+eas submit --platform ios --latest
+
+# Submit specific build
+eas submit --platform ios --id [build-id]
+\`\`\`
+
+### Credential Management
+
+  \`\`\`bash
+# View and manage iOS credentials
+eas credentials -p ios
+
+# Options:
+# - View credentials
+# - Set up new certificate
+# - Upload existing certificate
+# - Remove credentials
+\`\`\`
+
+---
+
+## Additional Resources
+
+### Apple Documentation
+
+  - ** App Store Connect **: https://appstoreconnect.apple.com
+- ** Developer Portal **: https://developer.apple.com/account
+- ** Review Guidelines **: https://developer.apple.com/app-store/review/guidelines/
+- ** Human Interface Guidelines **: https://developer.apple.com/design/human-interface-guidelines/
+- ** App Store Marketing **: https://developer.apple.com/app-store/marketing/guidelines/
+
+### Project Documentation
+
+  - ** EAS Build Guide **: \`./EAS_BUILD_GUIDE.md\`
+    - ** Environment Setup **: \`../ENVIRONMENT_SETUP.md\`
+      - ** Configuration **: \`./CONFIGURATION.md\`
+        - ** Troubleshooting **: \`./TROUBLESHOOTING.md\`
+          - ** Screenshots Guide **: \`./SCREENSHOTS_GUIDE.md\`
+
+### Support
+
+  - ** Apple Developer Forums **: https://developer.apple.com/forums/
+- ** Stack Overflow **: Tag \`ios\` or\`expo\`
+  - ** Expo Discord **: https://chat.expo.dev/
+- ** Project Support **: support @webpenter.com
+
+---
+
+## Quick Reference Card
+
+### Most Common Commands
+
+  \`\`\`bash
+# Build for App Store
+eas build -p ios --profile production
+
+# Submit to TestFlight
+eas submit -p ios --latest
+
+# Check build status
+eas build:list -p ios
+
+# Manage credentials
+eas credentials -p ios
+
+# View build
+eas build:view [build-id]
+\`\`\`
+
+### Important URLs
+
+  - ** App Store Connect **: https://appstoreconnect.apple.com
+- ** Developer Account **: https://developer.apple.com/account
+- ** TestFlight **: https://appstoreconnect.apple.com (TestFlight tab)
+- ** Review Status **: App Store Connect → My Apps →[Your App]
+
+---
+
+## Comparison: iOS vs Android
+
+  | Aspect | iOS(Apple) | Android(Google) |
+| --------| -------------| ------------------|
+| ** Cost ** | $99 / year | $25 one - time |
+| ** Review Time ** | 1 - 4 days | 1 - 7 days |
+| ** Requirements ** | Mac required | Any computer |
+| ** Certificate ** | Complex(managed by EAS) | Simple(keystore) |
+| ** Testing ** | TestFlight | Internal testing track |
+| ** Updates ** | Each update reviewed | Faster review for updates |
+| ** Privacy ** | Strict privacy labels | Data safety form |
+| ** Rejection Rate ** | Higher(~40 %) | Lower(~25 %) |
+
+  ---
+
+** Last Updated:** 2026-01 -08
+  ** For:** BookHere Mobile App v3.0.0
+
+For ThemeForest buyers: This comprehensive checklist ensures a smooth submission to the Apple App Store.Follow all steps carefully and refer to the troubleshooting section if you encounter issues.
+
+Good luck with your App Store submission! 🚀
+
+
 `
       }
     }
