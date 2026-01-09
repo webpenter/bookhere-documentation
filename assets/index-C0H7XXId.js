@@ -7885,11 +7885,11 @@ Go to: https://console.firebase.google.com/
 - [ ] Go to **Project Settings**
 - [ ] Add production SHA-1 certificate fingerprint
 - [ ] Download new **google-services.json** for Android
-- [ ] Replace the file in your project root: \`/ google - services.json\`
+- [ ] Replace the file in your project root: \`/google-services.json\`
 
 #### 2.4 Update Production Environment File
 
-Edit: \`/ Users / apple / homey - mobile - apps - react /.env.production\`
+Edit: \`/Users/apple/homey-mobile-apps-react/.env.production\`
 
 \`\`\`bash
 # Production Environment Variables
@@ -7962,8 +7962,8 @@ Review in \`app.config.js\` (android.permissions):
 
 \`\`\`bash
 # Remove old builds
-rm - rf node_modules
-rm - rf.expo
+rm -rf node_modules
+rm -rf .expo
 
 # Reinstall dependencies
 npm install
@@ -7973,7 +7973,7 @@ npm install
 
 \`\`\`bash
 # Build Android App Bundle(AAB) for production
-eas build--platform android--profile production
+eas build --platform android --profile production
   \`\`\`
 
 **Build Configuration:**
@@ -8015,7 +8015,7 @@ eas build--platform android--profile production
 
 Verify these files exist and meet requirements:
 
-- [ ] App Icon: \`./ src / assets / images / icon.png\` (512x512px, PNG)
+- [ ] App Icon: \`./src/assets/images/icon.png\` (512x512px, PNG)
 - [ ] Feature Graphic: Required (1024x500px) - **CREATE THIS**
 - [ ] Screenshots: See [SCREENSHOTS_GUIDE.md](./SCREENSHOTS_GUIDE.md)
 
@@ -8031,7 +8031,7 @@ Verify these files exist and meet requirements:
 - Should showcase your app's key feature or branding
 - No device frames needed
 
-**Reference:** \`documentation / SCREENSHOTS_GUIDE.md\` for design guidance
+**Reference:** \`documentation/SCREENSHOTS_GUIDE.md\` for design guidance
 
 #### 8.2 Screenshots
 
@@ -8058,7 +8058,7 @@ Verify these files exist and meet requirements:
 - [ ] Maps/location feature
 - [ ] Additional key features
 
-**Tool:** Use Figma templates from \`documentation / SCREENSHOTS_GUIDE.md\`
+**Tool:** Use Figma templates from \`documentation/SCREENSHOTS_GUIDE.md\`
 
 ---
 
@@ -8089,7 +8089,7 @@ Go to: https://play.google.com/console/
 
 - [ ] **Full description** (4000 chars max):
   \`\`\`
-  BookHere is your all -in -one mobile solution for discovering and booking accommodations.
+  BookHere is your all-in-one mobile solution for discovering and booking accommodations.
 
   KEY FEATURES:
   • Browse thousands of properties worldwide
@@ -8107,7 +8107,7 @@ Go to: https://play.google.com/console/
   Find your perfect stay with our intuitive interface.Search by location, dates, and preferences.
   View detailed property information, photos, and guest reviews.Book instantly with secure payment processing.
 
-  USER - FRIENDLY FEATURES:
+  USER-FRIENDLY FEATURES:
   • Easy property discovery with smart filters
   • Save favorite listings for later
   • Manage bookings in one place
@@ -8194,8 +8194,8 @@ SECURE & RELIABLE:
 \`\`\`
   - Information Collection
     - How We Use Your Information
-      - Data Sharing and Third - party Services
-        - Google Sign - In and OAuth
+      - Data Sharing and Third-party Services
+        - Google Sign-In and OAuth
           - Payment Processing(Stripe)
             - Location Services(Google Maps)
               - Push Notifications
@@ -8249,11 +8249,11 @@ Google Play requires detailed information about data handling:
 
 **Release Notes Example:**
 \`\`\`
-Initial release - BookHere Mobile v3.0.0
+Initial release - BookHere Mobile v3.0.1
 
 NEW FEATURES:
 • Browse and book accommodations worldwide
-• Google Sign - In for quick authentication
+• Google Sign-In for quick authentication
 • Interactive maps with property locations
 • Secure payment processing
 • Biometric authentication support
@@ -8389,7 +8389,7 @@ eas build --platform android --profile production
 
 ### Useful Links
 
-  - ** Google Play Console:** https://play.google.com/console/
+- ** Google Play Console:** https://play.google.com/console/
 - ** Google Cloud Console:** https://console.cloud.google.com/
 - ** Firebase Console:** https://console.firebase.google.com/
 - ** Expo Dashboard:** https://expo.dev/
@@ -8413,10 +8413,10 @@ For issues or questions:
   ** Issue:** Google Sign - In fails in production
 
     ** Solution:**
-      1. Verify SHA - 1 certificate in Google Cloud Console
+      1. Verify SHA-1 certificate in Google Cloud Console
 2. Ensure production OAuth client ID is correct in \`.env.production\`
-3. Check Firebase console has production SHA - 1
-4. Re - download\`google-services.json\` if needed
+3. Check Firebase console has production SHA-1
+4. Re-download\`google-services.json\` if needed
 
 ### "Google Maps not displaying"
 
@@ -8426,7 +8426,7 @@ For issues or questions:
       1. Check Google Maps API key in \`.env.production\`
 2. Verify API key restrictions in Google Cloud Console
 3. Ensure Maps SDK for Android is enabled
-4. Add production SHA - 1 to API key restrictions
+4. Add production SHA-1 to API key restrictions
 
 ### "App rejected for policy violation"
 
@@ -8503,7 +8503,7 @@ Before you begin, ensure you have:
 - [ ] **Mac computer** (required for iOS development)
 - [ ] **Xcode** installed (latest version from Mac App Store)
 - [ ] **Apple Developer Program** membership ($99/year)
-- [ ] **EAS CLI** installed (\`npm install - g eas- cli\`)
+- [ ] **EAS CLI** installed (\`npm install -g eas-cli\`)
 - [ ] **Expo account** (free at https://expo.dev)
 
 **Time required:** 1-2 hours for initial setup
@@ -8589,7 +8589,7 @@ If you prefer manual control:
 
 \`\`\`bash
 # View and manage certificates
-eas credentials - p ios
+eas credentials -p ios
 
 # Select:
 # → Set up a new iOS Distribution Certificate
@@ -8615,14 +8615,14 @@ eas credentials - p ios
 
 #### 4.1 iOS-Specific Configuration
 
-Edit: \`/ Users / apple / homey - mobile - apps - react /.env.production\`
+Edit: \`/Users/apple/homey-mobile-apps-react/.env.production\`
 
 \`\`\`bash
 # iOS OAuth Client ID(from Google Cloud Console)
 EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID = YOUR_PRODUCTION_IOS_CLIENT_ID.apps.googleusercontent.com
 
 # Web Client ID(for iOS Google Sign - In)
-  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
 
 # Google Maps API Key(iOS)
 GOOGLE_MAPS_API_KEY = YOUR_PRODUCTION_IOS_GOOGLE_MAPS_API_KEY
@@ -8670,11 +8670,11 @@ If using Firebase for iOS:
   - App nickname: "BookHere iOS"
   - App Store ID: (leave blank for now)
 - [ ] Download **GoogleService-Info.plist**
-- [ ] Replace file in project root: \`/ GoogleService - Info.plist\`
+- [ ] Replace file in project root: \`/ GoogleService-Info.plist\`
 
 **Verify file location:**
 \`\`\`bash
-ls - la GoogleService - Info.plist
+ls - la GoogleService-Info.plist
 # Should be in project root
   \`\`\`
 
@@ -8691,8 +8691,8 @@ Edit: \`app.config.js\`
 \`\`\`javascript
 ios: {
   supportsTablet: true,
-    bundleIdentifier: "com.webpenter.googlesignin",
-      buildNumber: "10",  // Increment for each submission
+  bundleIdentifier: "com.webpenter.googlesignin",
+  buildNumber: "10",  // Increment for each submission
   // ...
 }
 \`\`\`
@@ -8721,10 +8721,10 @@ Verify in \`app.config.js\`:
 ios: {
   infoPlist: {
     NSFaceIDUsageDescription: "Allow BookHere Mobile to use Face ID for secure login.",
-      NSLocationWhenInUseUsageDescription: "We need your location to show properties near you.",
-        NSPhotoLibraryUsageDescription: "We need access to your photos to upload property images.",
-          NSCameraUsageDescription: "We need camera access to take photos of properties.",
-            ITSAppUsesNonExemptEncryption: false,
+    NSLocationWhenInUseUsageDescription: "We need your location to show properties near you.",
+    NSPhotoLibraryUsageDescription: "We need access to your photos to upload property images.",
+    NSCameraUsageDescription: "We need camera access to take photos of properties.",
+    ITSAppUsesNonExemptEncryption: false,
   },
   // ...
 }
@@ -8762,7 +8762,7 @@ For iOS 17+, you may need a privacy manifest. EAS handles this automatically, bu
 
 \`\`\`bash
 # Build for App Store submission
-eas build--platform ios--profile production
+eas build --platform ios --profile production
 
 # EAS will:
 # 1. Load.env.production variables
@@ -8782,10 +8782,10 @@ eas build--platform ios--profile production
 
 \`\`\`bash
 # Check build status
-eas build: list--platform ios
+eas build: list --platform ios
 
 # View specific build
-eas build: view[build - id]
+eas build: view [build - id]
 
 # Or monitor in browser
 # https://expo.dev/accounts/[account]/projects/bookhere/builds
@@ -8795,7 +8795,7 @@ eas build: view[build - id]
 
 \`\`\`bash
 # Download IPA file
-eas build: download--platform ios--profile production
+eas build: download --platform ios --profile production
 
 # IPA file downloaded to current directory
 # production - [timestamp].ipa
@@ -8813,10 +8813,10 @@ After build completes:
 
 \`\`\`bash
 # Submit to TestFlight automatically
-eas submit--platform ios--latest
+eas submit --platform ios --latest
 
 # Or specify build ID
-eas submit--platform ios--id[build - id]
+eas submit --platform ios --id [build - id]
   \`\`\`
 
 **EAS will:**
@@ -8828,7 +8828,7 @@ eas submit--platform ios--id[build - id]
 
 If not using \`eas submit\`:
 
-1. Download IPA: \`eas build: download--platform ios--profile production\`
+1. Download IPA: \`eas build: download --platform ios --profile production\`
 2. Open **Transporter** app (Mac)
 3. Sign in with Apple Developer account
 4. Drag and drop IPA file
@@ -8874,7 +8874,7 @@ Go to: https://appstoreconnect.apple.com
 
 - [ ] **Size**: 1024x1024 pixels
 - [ ] **Format**: PNG (no alpha channel)
-- [ ] **Location**: \`./ src / assets / images / icon.png\`
+- [ ] **Location**: \`./src/assets/images/icon.png\`
 - [ ] **Requirements**:
   - No rounded corners (Apple adds them)
   - No transparency
@@ -8919,7 +8919,7 @@ Must provide screenshots for at least one device size:
 - [ ] Key features showcase
 
 **Tools:**
-- Use Figma templates from \`documentation / SCREENSHOTS_GUIDE.md\`
+- Use Figma templates from \`documentation/SCREENSHOTS_GUIDE.md\`
 - iOS Simulator (Xcode → Simulator → Cmd+S to screenshot)
 - Third-party tools: Screenshot Creator, App Mockup, etc.
 
@@ -9018,7 +9018,7 @@ Discover and book amazing accommodations worldwide.Secure payments, instant conf
 
 **Description** (4000 chars):
 \`\`\`
-BookHere is your all -in -one mobile solution for discovering and booking accommodations worldwide.
+BookHere is your all-in-one mobile solution for discovering and booking accommodations worldwide.
 
 KEY FEATURES
 
@@ -9030,7 +9030,7 @@ Browse & Discover
 • User reviews and ratings
 
 Seamless Booking
-• Real - time availability checking
+• Real-time availability checking
 • Instant booking confirmation
 • Secure payment processing with Stripe
 • Multiple payment options
@@ -9041,8 +9041,8 @@ User Features
 • Save favorite properties
 • Booking history and management
 • Push notifications for booking updates
-• In - app messaging with hosts
-• Multi - language support
+• In-app messaging with hosts
+• Multi-language support
 
 For Hosts
 • Easy property listing management
@@ -9066,7 +9066,7 @@ PERFECT FOR
 
 WHY BOOKHERE ?
 
-✓ User - friendly interface
+✓ User-friendly interface
 ✓ Fast and responsive
 ✓ Reliable and secure
 ✓ 24 / 7 customer support
@@ -9120,19 +9120,19 @@ Welcome to BookHere v3.0.0!
 
 NEW FEATURES
 • Browse thousands of properties worldwide
-• Google Sign - In for quick and secure authentication
+• Google Sign-In for quick and secure authentication
 • Interactive maps to explore properties
 • Secure payment processing
 • Biometric authentication(Face ID / Touch ID)
 • Push notifications for booking updates
 • User reviews and ratings
 • Favorite properties and booking history
-• Multi - language support
+• Multi-language support
 
 SEAMLESS EXPERIENCE
 • Intuitive and beautiful user interface
 • Fast property search and filtering
-• Real - time availability checking
+• Real-time availability checking
 • Instant booking confirmation
 • Easy property management for hosts
 
@@ -9173,7 +9173,7 @@ Password: Demo123!
 
 TESTING NOTES:
 - All features are accessible with demo account
-  - Google Sign - In is optional(demo account available)
+  - Google Sign-In is optional(demo account available)
     - Payment processing uses Stripe test mode for demo
       - Test card: 4242 4242 4242 4242
 
