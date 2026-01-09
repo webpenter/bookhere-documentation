@@ -7955,12 +7955,12 @@ Go to: https://play.google.com/console/
 
 - [ ] **App name:** BookHere Mobile
 - [ ] **Short description** (80 chars max):
-  \`\`\`
+  \`\`\`Example Short Description
   Book hotels, apartments, and vacation rentals with ease.
   \`\`\`
 
 - [ ] **Full description** (4000 chars max):
-  \`\`\`
+  \`\`\`Example Full Description
   BookHere is your all-in-one mobile solution for discovering and booking accommodations.
 
   KEY FEATURES:
