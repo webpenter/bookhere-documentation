@@ -6358,456 +6358,6 @@ If your question isn't answered here:
 
 Don't hesitate to reach out to our support team at support@webpenter.com with your purchase code.
 
-    `},security:{title:"Security & License",icon:$0,tags:["legal","safety","privacy"],content:`
-# Security Policy
-
-BookHere - Property Rental Mobile App
-
----
-
-## Table of Contents
-
-1. [Security Best Practices](#security-best-practices)
-2. [API Keys & Credentials](#api-keys--credentials)
-3. [Data Protection](#data-protection)
-4. [Common Security Issues](#common-security-issues)
-5. [Reporting Vulnerabilities](#reporting-vulnerabilities)
-6. [Security Checklist](#security-checklist)
-
----
-
-## Security Best Practices
-
-### 1. Environment Variables
-
-**✅ DO:**
-- Store all sensitive credentials in \`.env\` file
-- Use \`.env.example\` as a template (no real credentials)
-- Add \`.env\` to \`.gitignore\`
-- Use different credentials for development/production
-- Never commit \`.env\` to version control
-
-**❌ DON'T:**
-- Hardcode API keys in source code
-- Share \`.env\` file publicly
-- Include credentials in screenshots or documentation
-- Commit API keys to Git
-- Use production keys in development
-
-**Example:**
-\`\`\`env
-# .env (never commit this)
-STRIPE_PUBLISHABLE_KEY=pk_live_YOUR_REAL_KEY
-
-# .env.example (safe to commit)
-STRIPE_PUBLISHABLE_KEY=YOUR_STRIPE_PUBLISHABLE_KEY_HERE
-\`\`\`
-
----
-
-### 2. API Keys Management
-
-#### Google Maps API Key
-- **Restrict** key usage in Google Cloud Console
-- Add application restrictions (iOS bundle ID, Android package name)
-- Add API restrictions (only enable needed APIs)
-- Monitor usage in Google Cloud Console
-- Rotate keys if exposed
-
-#### Stripe Keys
-- **Never** expose secret keys in client code
-- Use publishable keys only in mobile app
-- Process payments through your backend
-- Use test mode keys for development
-- Enable webhook signing
-
-#### Other API Keys
-- Follow principle of least privilege
-- Use separate keys for each environment
-- Implement key rotation policy
-- Monitor for unusual activity
-
----
-
-## API Keys & Credentials
-
-### What Should NEVER Be in Source Code
-
-❌ API Keys and Secrets
-❌ Database Credentials
-❌ Payment Gateway Secret Keys
-❌ OAuth Client Secrets
-❌ Encryption Keys
-❌ Private Keys (.p12, .p8, .pem)
-❌ AWS/Cloud Credentials
-❌ Firebase Admin SDK Keys
-
-### What Can Be in Source Code
-
-✅ Publishable API Keys (with restrictions)
-✅ Public Configuration
-✅ App Scheme/Bundle ID
-✅ Non-sensitive URLs
-
----
-
-## Data Protection
-
-### 1. User Data Storage
-
-**Local Storage (On Device):**
-- Use \`expo-secure-store\` for sensitive data
-- Never store passwords in plain text
-- Encrypt user tokens
-- Clear sensitive data on logout
-- Don't cache sensitive API responses
-
-**Example:**
-\`\`\`typescript
-import * as SecureStore from 'expo-secure-store';
-
-// Store securely
-await SecureStore.setItemAsync('authToken', token);
-
-// Retrieve
-const token = await SecureStore.getItemAsync('authToken');
-
-// Delete on logout
-await SecureStore.deleteItemAsync('authToken');
-\`\`\`
-
-### 2. Network Security
-
-**HTTPS Only:**
-- All API calls must use HTTPS
-- No HTTP in production
-- Verify SSL certificates
-- Use certificate pinning for extra security (advanced)
-
-**API Communication:**
-\`\`\`typescript
-// ✅ Good
-const API_URL = 'https://your-backend.com';
-
-// ❌ Bad
-const API_URL = 'http://your-backend.com';
-\`\`\`
-
-### 3. Authentication Tokens
-
-**JWT Tokens:**
-- Store in secure storage
-- Include expiration
-- Implement token refresh
-- Clear on logout
-- Validate on backend
-
-**Biometric Auth:**
-- Use as additional security layer
-- Still require password as fallback
-- Store biometric availability, not biometric data
-
----
-
-## Common Security Issues
-
-### 1. SQL Injection (Backend)
-While this is a mobile app, ensure your WordPress backend:
-- Uses prepared statements
-- Sanitizes all inputs
-- Validates data types
-- Escapes output
-
-### 2. XSS (Cross-Site Scripting)
-- Sanitize user inputs before displaying
-- Use React's built-in XSS protection
-- Don't use \`dangerouslySetInnerHTML\` unless necessary
-- Validate URLs before opening
-
-### 3. Insecure Data Storage
-\`\`\`typescript
-// ❌ Bad - AsyncStorage for sensitive data
-await AsyncStorage.setItem('password', password);
-
-// ✅ Good - SecureStore for sensitive data
-await SecureStore.setItemAsync('authToken', token);
-\`\`\`
-
-### 4. Unencrypted Communication
-\`\`\`typescript
-// ❌ Bad
-fetch('http://api.example.com/user/data')
-
-// ✅ Good
-fetch('https://api.example.com/user/data')
-  \`\`\`
-
-### 5. Insufficient Authentication
-- Always validate tokens on backend
-- Implement session timeout
-- Use secure password requirements
-- Enable 2FA where possible
-
----
-
-## Reporting Vulnerabilities
-
-If you discover a security vulnerability:
-
-### Contact
-**Email:** security@webpenter.com (or support@webpenter.com)
-
-### What to Include
-1. Description of the vulnerability
-2. Steps to reproduce
-3. Potential impact
-4. Suggested fix (if any)
-5. Your contact information
-
-### Response Time
-- **Acknowledgment:** Within 48 hours
-- **Initial Assessment:** Within 1 week
-- **Fix Timeline:** Depends on severity
-
-### Disclosure Policy
-- Please allow us reasonable time to fix
-- We'll credit you in release notes (if desired)
-- Coordinate public disclosure timing
-
----
-
-## Security Checklist
-
-### Before Development
-
-- [ ] Create \`.env\` file from \`.env.example\`
-- [ ] Verify \`.env\` is in \`.gitignore\`
-- [ ] Use test API keys for development
-- [ ] Enable HTTPS on backend
-- [ ] Set up error monitoring (Sentry, etc.)
-
-### During Development
-
-- [ ] No hardcoded credentials
-- [ ] Use SecureStore for sensitive data
-- [ ] All API calls use HTTPS
-- [ ] Validate all user inputs
-- [ ] Sanitize data before display
-- [ ] Implement proper error handling
-- [ ] Don't log sensitive data
-- [ ] Use environment variables
-
-### Code Review Checklist
-
-- [ ] No API keys in source code
-- [ ] No passwords or secrets
-- [ ] Proper input validation
-- [ ] Secure data storage
-- [ ] HTTPS for all API calls
-- [ ] Error messages don't leak info
-- [ ] Authentication properly implemented
-- [ ] Authorization checks in place
-
-### Before Production
-
-- [ ] Switch to production API keys
-- [ ] Review all environment variables
-- [ ] Enable SSL/TLS on backend
-- [ ] Implement rate limiting (backend)
-- [ ] Set up monitoring and alerts
-- [ ] Enable Stripe webhook signatures
-- [ ] Restrict API keys in cloud consoles
-- [ ] Test all payment flows
-- [ ] Verify data encryption
-- [ ] Check authentication flows
-- [ ] Review error messages
-- [ ] Enable security headers (backend)
-
-### iOS/Android Specific
-
-**iOS:**
-- [ ] Enable App Transport Security
-- [ ] Use keychain for sensitive data
-- [ ] Implement Face ID/Touch ID securely
-- [ ] Configure proper entitlements
-- [ ] Enable data protection
-
-**Android:**
-- [ ] Use EncryptedSharedPreferences
-- [ ] Enable ProGuard/R8 obfuscation
-- [ ] Configure network security config
-- [ ] Use Fingerprint/Biometric API correctly
-- [ ] Enable backup encryption
-
----
-
-## Security Configuration
-
-### 1. App Transport Security (iOS)
-
-Already configured in \`app.json\`, but verify:
-
-\`\`\`json
-{
-  "ios": {
-    "infoPlist": {
-      "NSAppTransportSecurity": {
-        "NSAllowsArbitraryLoads": false
-      }
-    }
-  }
-}
-\`\`\`
-
-### 2. Network Security (Android)
-
-Create \`android/app/src/main/res/xml/network_security_config.xml\`:
-
-\`\`\`xml
-<? xml version = "1.0" encoding = "utf-8" ?>
-<network-security-config>
-  <base-config cleartextTrafficPermitted = "false" >
-    <trust-anchors >
-      <certificates src="system" />
-    </trust-anchors>
-  </base-config>
-</network-security-config>
-\`\`\`
-
-### 3. ProGuard Rules (Android)
-
-The app includes ProGuard configuration for code obfuscation.
-Verify \`android/app/proguard-rules.pro\` includes:
-
-\`\`\`proguard
-# Keep React Native
-  - keep class com.facebook.react.** { *; }
-
-# Keep Expo
-  - keep class expo.modules.** { *; }
-
-# Keep your app classes
-  - keep class com.yourcompany.yourapp.** { *; }
-    \`\`\`
-
----
-
-## Security Best Practices by Feature
-
-### Payment Processing
-- **✅** Use Stripe/PayPal SDKs (don't implement yourself)
-- **✅** Process payments through backend
-- **✅** Use webhook signatures
-- **✅** Implement idempotency
-- **❌** Never store credit card numbers
-- **❌** Never log payment details
-
-### User Authentication
-- **✅** Use JWT with expiration
-- **✅** Implement token refresh
-- **✅** Hash passwords (backend)
-- **✅** Use HTTPS for auth endpoints
-- **✅** Implement rate limiting
-- **❌** Never store plain-text passwords
-- **❌** Don't expose user IDs in URLs
-
-### File Uploads
-- **✅** Validate file types
-- **✅** Limit file sizes
-- **✅** Scan for malware (backend)
-- **✅** Use secure URLs
-- **❌** Don't execute uploaded files
-- **❌** Don't trust file extensions
-
----
-
-## Compliance
-
-### GDPR (If applicable)
-- Obtain user consent for data collection
-- Provide data export functionality
-- Implement data deletion
-- Have privacy policy
-- Use data minimization
-
-### PCI DSS (Payment Card Industry)
-- Use certified payment processors (Stripe)
-- Don't store card data
-- Use tokenization
-- Implement secure transmission
-
-### CCPA (California Consumer Privacy Act)
-- Disclose data collection practices
-- Provide opt-out mechanisms
-- Honor data deletion requests
-
----
-
-## Incident Response Plan
-
-### If Credentials Are Exposed
-
-1. **Immediately** rotate all affected credentials
-2. Review access logs for unauthorized use
-3. Notify affected users if data was accessed
-4. Update documentation
-5. Implement additional safeguards
-
-### If Vulnerability Is Found
-
-1. Assess severity and impact
-2. Develop and test fix
-3. Deploy fix to production
-4. Notify users if necessary
-5. Document in security advisory
-
----
-
-## Resources
-
-### Security Tools
-- **Dependency Scanning:** \`npm audit\`
-- **Code Analysis:** ESLint with security plugins
-- **Secret Scanning:** git-secrets, truffleHog
-- **Monitoring:** Sentry for error tracking
-
-### Security Guidelines
-- OWASP Mobile Security Project
-- OWASP Top 10
-- React Native Security Best Practices
-- Expo Security Considerations
-
-### Commands
-\`\`\`bash
-# Check for vulnerabilities
-npm audit
-
-# Fix vulnerabilities
-npm audit fix
-
-# Check for exposed secrets
-git log -p | grep -i "api[_-]key|password"
-  \`\`\`
-
----
-
-## Conclusion
-
-Security is an ongoing process, not a one-time task. Stay informed about:
-- New vulnerabilities in dependencies
-- Security updates for React Native and Expo
-- Best practices in mobile security
-- Changes in compliance requirements
-
-**Remember:** Security starts with you. Follow these guidelines and stay vigilant.
-
----
-
-**Last Updated:** January 2026
-
-For security concerns: security@webpenter.com
-
-
     `},troubleshooting:{title:"Troubleshooting",icon:sm,tags:["help","fixes","errors"],content:`
 # Troubleshooting Guide - BookHere Mobile App
 
@@ -10075,7 +9625,457 @@ For ThemeForest buyers: This comprehensive checklist ensures a smooth submission
 Good luck with your App Store submission! 🚀
 
 
-`}}}},fS="v3.0.0",mS="support@webpenter.com",hS="https://demo.bookhere.app",gS=({content:o,onNavigate:t,onHeadersFound:s})=>{const[a,r]=os.useState(null),[d,m]=os.useState(null);os.useEffect(()=>{if(s){const x=v(o).filter(D=>D.type==="h2"||D.type==="h3").map(D=>({id:D.id,text:D.content,level:D.type==="h2"?2:3}));s(x)}},[o,s]);const g=(N,x)=>{navigator.clipboard.writeText(N),r(x),setTimeout(()=>r(null),2e3)},y=N=>{const x=`${window.location.origin}${window.location.pathname}#${N}`;navigator.clipboard.writeText(x),m(N),setTimeout(()=>m(null),2e3)},h=N=>N.toLowerCase().replace(/[^\w\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").trim(),v=N=>{const x=N.split(`
+`}}},security:{title:"Security & License",icon:$0,tags:["legal","safety","privacy"],content:`
+# Security Policy
+
+BookHere - Property Rental Mobile App
+
+---
+
+## Table of Contents
+
+1. [Security Best Practices](#security-best-practices)
+2. [API Keys & Credentials](#api-keys--credentials)
+3. [Data Protection](#data-protection)
+4. [Common Security Issues](#common-security-issues)
+5. [Reporting Vulnerabilities](#reporting-vulnerabilities)
+6. [Security Checklist](#security-checklist)
+
+---
+
+## Security Best Practices
+
+### 1. Environment Variables
+
+**✅ DO:**
+- Store all sensitive credentials in \`.env\` file
+- Use \`.env.example\` as a template (no real credentials)
+- Add \`.env\` to \`.gitignore\`
+- Use different credentials for development/production
+- Never commit \`.env\` to version control
+
+**❌ DON'T:**
+- Hardcode API keys in source code
+- Share \`.env\` file publicly
+- Include credentials in screenshots or documentation
+- Commit API keys to Git
+- Use production keys in development
+
+**Example:**
+\`\`\`env
+# .env (never commit this)
+STRIPE_PUBLISHABLE_KEY=pk_live_YOUR_REAL_KEY
+
+# .env.example (safe to commit)
+STRIPE_PUBLISHABLE_KEY=YOUR_STRIPE_PUBLISHABLE_KEY_HERE
+\`\`\`
+
+---
+
+### 2. API Keys Management
+
+#### Google Maps API Key
+- **Restrict** key usage in Google Cloud Console
+- Add application restrictions (iOS bundle ID, Android package name)
+- Add API restrictions (only enable needed APIs)
+- Monitor usage in Google Cloud Console
+- Rotate keys if exposed
+
+#### Stripe Keys
+- **Never** expose secret keys in client code
+- Use publishable keys only in mobile app
+- Process payments through your backend
+- Use test mode keys for development
+- Enable webhook signing
+
+#### Other API Keys
+- Follow principle of least privilege
+- Use separate keys for each environment
+- Implement key rotation policy
+- Monitor for unusual activity
+
+---
+
+## API Keys & Credentials
+
+### What Should NEVER Be in Source Code
+
+❌ API Keys and Secrets
+❌ Database Credentials
+❌ Payment Gateway Secret Keys
+❌ OAuth Client Secrets
+❌ Encryption Keys
+❌ Private Keys (.p12, .p8, .pem)
+❌ AWS/Cloud Credentials
+❌ Firebase Admin SDK Keys
+
+### What Can Be in Source Code
+
+✅ Publishable API Keys (with restrictions)
+✅ Public Configuration
+✅ App Scheme/Bundle ID
+✅ Non-sensitive URLs
+
+---
+
+## Data Protection
+
+### 1. User Data Storage
+
+**Local Storage (On Device):**
+- Use \`expo-secure-store\` for sensitive data
+- Never store passwords in plain text
+- Encrypt user tokens
+- Clear sensitive data on logout
+- Don't cache sensitive API responses
+
+**Example:**
+\`\`\`typescript
+import * as SecureStore from 'expo-secure-store';
+
+// Store securely
+await SecureStore.setItemAsync('authToken', token);
+
+// Retrieve
+const token = await SecureStore.getItemAsync('authToken');
+
+// Delete on logout
+await SecureStore.deleteItemAsync('authToken');
+\`\`\`
+
+### 2. Network Security
+
+**HTTPS Only:**
+- All API calls must use HTTPS
+- No HTTP in production
+- Verify SSL certificates
+- Use certificate pinning for extra security (advanced)
+
+**API Communication:**
+\`\`\`typescript
+// ✅ Good
+const API_URL = 'https://your-backend.com';
+
+// ❌ Bad
+const API_URL = 'http://your-backend.com';
+\`\`\`
+
+### 3. Authentication Tokens
+
+**JWT Tokens:**
+- Store in secure storage
+- Include expiration
+- Implement token refresh
+- Clear on logout
+- Validate on backend
+
+**Biometric Auth:**
+- Use as additional security layer
+- Still require password as fallback
+- Store biometric availability, not biometric data
+
+---
+
+## Common Security Issues
+
+### 1. SQL Injection (Backend)
+While this is a mobile app, ensure your WordPress backend:
+- Uses prepared statements
+- Sanitizes all inputs
+- Validates data types
+- Escapes output
+
+### 2. XSS (Cross-Site Scripting)
+- Sanitize user inputs before displaying
+- Use React's built-in XSS protection
+- Don't use \`dangerouslySetInnerHTML\` unless necessary
+- Validate URLs before opening
+
+### 3. Insecure Data Storage
+\`\`\`typescript
+// ❌ Bad - AsyncStorage for sensitive data
+await AsyncStorage.setItem('password', password);
+
+// ✅ Good - SecureStore for sensitive data
+await SecureStore.setItemAsync('authToken', token);
+\`\`\`
+
+### 4. Unencrypted Communication
+\`\`\`typescript
+// ❌ Bad
+fetch('http://api.example.com/user/data')
+
+// ✅ Good
+fetch('https://api.example.com/user/data')
+  \`\`\`
+
+### 5. Insufficient Authentication
+- Always validate tokens on backend
+- Implement session timeout
+- Use secure password requirements
+- Enable 2FA where possible
+
+---
+
+## Reporting Vulnerabilities
+
+If you discover a security vulnerability:
+
+### Contact
+**Email:** security@webpenter.com (or support@webpenter.com)
+
+### What to Include
+1. Description of the vulnerability
+2. Steps to reproduce
+3. Potential impact
+4. Suggested fix (if any)
+5. Your contact information
+
+### Response Time
+- **Acknowledgment:** Within 48 hours
+- **Initial Assessment:** Within 1 week
+- **Fix Timeline:** Depends on severity
+
+### Disclosure Policy
+- Please allow us reasonable time to fix
+- We'll credit you in release notes (if desired)
+- Coordinate public disclosure timing
+
+---
+
+## Security Checklist
+
+### Before Development
+
+- [ ] Create \`.env\` file from \`.env.example\`
+- [ ] Verify \`.env\` is in \`.gitignore\`
+- [ ] Use test API keys for development
+- [ ] Enable HTTPS on backend
+- [ ] Set up error monitoring (Sentry, etc.)
+
+### During Development
+
+- [ ] No hardcoded credentials
+- [ ] Use SecureStore for sensitive data
+- [ ] All API calls use HTTPS
+- [ ] Validate all user inputs
+- [ ] Sanitize data before display
+- [ ] Implement proper error handling
+- [ ] Don't log sensitive data
+- [ ] Use environment variables
+
+### Code Review Checklist
+
+- [ ] No API keys in source code
+- [ ] No passwords or secrets
+- [ ] Proper input validation
+- [ ] Secure data storage
+- [ ] HTTPS for all API calls
+- [ ] Error messages don't leak info
+- [ ] Authentication properly implemented
+- [ ] Authorization checks in place
+
+### Before Production
+
+- [ ] Switch to production API keys
+- [ ] Review all environment variables
+- [ ] Enable SSL/TLS on backend
+- [ ] Implement rate limiting (backend)
+- [ ] Set up monitoring and alerts
+- [ ] Enable Stripe webhook signatures
+- [ ] Restrict API keys in cloud consoles
+- [ ] Test all payment flows
+- [ ] Verify data encryption
+- [ ] Check authentication flows
+- [ ] Review error messages
+- [ ] Enable security headers (backend)
+
+### iOS/Android Specific
+
+**iOS:**
+- [ ] Enable App Transport Security
+- [ ] Use keychain for sensitive data
+- [ ] Implement Face ID/Touch ID securely
+- [ ] Configure proper entitlements
+- [ ] Enable data protection
+
+**Android:**
+- [ ] Use EncryptedSharedPreferences
+- [ ] Enable ProGuard/R8 obfuscation
+- [ ] Configure network security config
+- [ ] Use Fingerprint/Biometric API correctly
+- [ ] Enable backup encryption
+
+---
+
+## Security Configuration
+
+### 1. App Transport Security (iOS)
+
+Already configured in \`app.json\`, but verify:
+
+\`\`\`json
+{
+  "ios": {
+    "infoPlist": {
+      "NSAppTransportSecurity": {
+        "NSAllowsArbitraryLoads": false
+      }
+    }
+  }
+}
+\`\`\`
+
+### 2. Network Security (Android)
+
+Create \`android/app/src/main/res/xml/network_security_config.xml\`:
+
+\`\`\`xml
+<? xml version = "1.0" encoding = "utf-8" ?>
+<network-security-config>
+  <base-config cleartextTrafficPermitted = "false" >
+    <trust-anchors >
+      <certificates src="system" />
+    </trust-anchors>
+  </base-config>
+</network-security-config>
+\`\`\`
+
+### 3. ProGuard Rules (Android)
+
+The app includes ProGuard configuration for code obfuscation.
+Verify \`android/app/proguard-rules.pro\` includes:
+
+\`\`\`proguard
+# Keep React Native
+  - keep class com.facebook.react.** { *; }
+
+# Keep Expo
+  - keep class expo.modules.** { *; }
+
+# Keep your app classes
+  - keep class com.yourcompany.yourapp.** { *; }
+    \`\`\`
+
+---
+
+## Security Best Practices by Feature
+
+### Payment Processing
+- **✅** Use Stripe/PayPal SDKs (don't implement yourself)
+- **✅** Process payments through backend
+- **✅** Use webhook signatures
+- **✅** Implement idempotency
+- **❌** Never store credit card numbers
+- **❌** Never log payment details
+
+### User Authentication
+- **✅** Use JWT with expiration
+- **✅** Implement token refresh
+- **✅** Hash passwords (backend)
+- **✅** Use HTTPS for auth endpoints
+- **✅** Implement rate limiting
+- **❌** Never store plain-text passwords
+- **❌** Don't expose user IDs in URLs
+
+### File Uploads
+- **✅** Validate file types
+- **✅** Limit file sizes
+- **✅** Scan for malware (backend)
+- **✅** Use secure URLs
+- **❌** Don't execute uploaded files
+- **❌** Don't trust file extensions
+
+---
+
+## Compliance
+
+### GDPR (If applicable)
+- Obtain user consent for data collection
+- Provide data export functionality
+- Implement data deletion
+- Have privacy policy
+- Use data minimization
+
+### PCI DSS (Payment Card Industry)
+- Use certified payment processors (Stripe)
+- Don't store card data
+- Use tokenization
+- Implement secure transmission
+
+### CCPA (California Consumer Privacy Act)
+- Disclose data collection practices
+- Provide opt-out mechanisms
+- Honor data deletion requests
+
+---
+
+## Incident Response Plan
+
+### If Credentials Are Exposed
+
+1. **Immediately** rotate all affected credentials
+2. Review access logs for unauthorized use
+3. Notify affected users if data was accessed
+4. Update documentation
+5. Implement additional safeguards
+
+### If Vulnerability Is Found
+
+1. Assess severity and impact
+2. Develop and test fix
+3. Deploy fix to production
+4. Notify users if necessary
+5. Document in security advisory
+
+---
+
+## Resources
+
+### Security Tools
+- **Dependency Scanning:** \`npm audit\`
+- **Code Analysis:** ESLint with security plugins
+- **Secret Scanning:** git-secrets, truffleHog
+- **Monitoring:** Sentry for error tracking
+
+### Security Guidelines
+- OWASP Mobile Security Project
+- OWASP Top 10
+- React Native Security Best Practices
+- Expo Security Considerations
+
+### Commands
+\`\`\`bash
+# Check for vulnerabilities
+npm audit
+
+# Fix vulnerabilities
+npm audit fix
+
+# Check for exposed secrets
+git log -p | grep -i "api[_-]key|password"
+  \`\`\`
+
+---
+
+## Conclusion
+
+Security is an ongoing process, not a one-time task. Stay informed about:
+- New vulnerabilities in dependencies
+- Security updates for React Native and Expo
+- Best practices in mobile security
+- Changes in compliance requirements
+
+**Remember:** Security starts with you. Follow these guidelines and stay vigilant.
+
+---
+
+**Last Updated:** January 2026
+
+For security concerns: security@webpenter.com
+
+
+    `}},fS="v3.0.0",mS="support@webpenter.com",hS="https://demo.bookhere.app",gS=({content:o,onNavigate:t,onHeadersFound:s})=>{const[a,r]=os.useState(null),[d,m]=os.useState(null);os.useEffect(()=>{if(s){const x=v(o).filter(D=>D.type==="h2"||D.type==="h3").map(D=>({id:D.id,text:D.content,level:D.type==="h2"?2:3}));s(x)}},[o,s]);const g=(N,x)=>{navigator.clipboard.writeText(N),r(x),setTimeout(()=>r(null),2e3)},y=N=>{const x=`${window.location.origin}${window.location.pathname}#${N}`;navigator.clipboard.writeText(x),m(N),setTimeout(()=>m(null),2e3)},h=N=>N.toLowerCase().replace(/[^\w\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").trim(),v=N=>{const x=N.split(`
 `),D=[];let q=null,B=null,X="",Z=null;const te=()=>{Z&&(D.push(Z),Z=null)};return x.forEach(K=>{const W=K.trim();if(W.startsWith("```")){te(),q?(D.push({type:"code",content:q.join(`
 `),language:X}),q=null,X=""):(q=[],X=W.replace("```","").trim());return}if(q!==null){q.push(K);return}if(W.startsWith("|")&&W.endsWith("|")){te();const Y=K.split("|").filter((z,j,re)=>!(j===0||j===re.length-1)).map(z=>z.trim());if(Y.every(z=>z.match(/^[ :-]+$/)))return;B?B.push(Y):B=[Y];return}else B&&(D.push({type:"table",content:B}),B=null);if(W.startsWith("- [ ] ")||W.startsWith("- [] ")||W.startsWith("- [x] ")){te();const Y=W.startsWith("- [x] ");D.push({type:"task",content:W.replace(/- \[[ x]?\] /i,""),completed:Y})}else if(W.startsWith("- ")||W.startsWith("* ")||W.startsWith("+ ")){const Y=W.replace(/^[-*+]\s+/,"");Z&&Z.type==="ul"?Z.items.push({content:Y}):(te(),Z={type:"ul",items:[{content:Y}]})}else if(W.match(/^\d+\.\s+/)){const Y=W.match(/^(\d+)\.\s+/),z=Y?Y[1]:void 0,j=W.replace(/^\d+\.\s+/,"");Z&&Z.type==="ol"?Z.items.push({content:j,value:z}):(te(),Z={type:"ol",items:[{content:j,value:z}]})}else if(te(),W.startsWith("# ")){const Y=W.replace("# ","");D.push({type:"h1",content:Y,id:h(Y)})}else if(W.startsWith("## ")){const Y=W.replace("## ","");D.push({type:"h2",content:Y,id:h(Y)})}else if(W.startsWith("### ")){const Y=W.replace("### ","");D.push({type:"h3",content:Y,id:h(Y)})}else if(W.startsWith("#### ")){const Y=W.replace("#### ","");D.push({type:"h4",content:Y,id:h(Y)})}else if(W.startsWith("##### ")){const Y=W.replace("##### ","");D.push({type:"h5",content:Y,id:h(Y)})}else if(W.startsWith("###### ")){const Y=W.replace("###### ","");D.push({type:"h6",content:Y,id:h(Y)})}else W==="---"||W==="***"||W==="___"?D.push({type:"hr"}):W.startsWith("> ")?D.push({type:"blockquote",content:W.replace("> ","")}):W!==""?D.push({type:"p",content:W}):D.push({type:"space"})}),te(),B&&D.push({type:"table",content:B}),D},C=v(o),T=N=>{var q;const D=N.target.closest("a");if(D&&t){const B=D.getAttribute("href");if(B){if(B.endsWith(".md")||B.includes("./")){N.preventDefault();const X=(q=B.split("/").pop())==null?void 0:q.replace(".md","").toLowerCase();X&&t(X)}else if(B.startsWith("#")){N.preventDefault();const X=B.slice(1),Z=document.getElementById(X);if(Z){const K=Z.getBoundingClientRect().top+window.pageYOffset+-80;window.scrollTo({top:K,behavior:"smooth"})}}}}},E=N=>N.replace(/"([^"]+)"/g,'<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[13px] font-semibold mx-0.5 shadow-sm">$1</span>').replace(/\*\*(.*?)\*\*/g,'<strong class="text-slate-900 font-bold">$1</strong>').replace(/\*(.*?)\*/g,'<em class="italic">$1</em>').replace(/__(.*?)__/g,'<strong class="text-slate-900 font-bold">$1</strong>').replace(/_(.*?)_/g,'<em class="italic">$1</em>').replace(/~~(.*?)~~/g,'<del class="line-through text-slate-400">$1</del>').replace(/\[(.*?)\]\((.*?)\)/g,'<a href="$2" class="text-rose-600 hover:underline font-semibold">$1</a>').replace(new RegExp('(?<!href=")(https?:\\/\\/[^\\s<]+)',"g"),'<a href="$1" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold bg-rose-50/50 hover:bg-rose-100/50 px-1.5 py-0.5 rounded-md transition-all border border-rose-100/50">$1<svg class="inline-block ml-1 w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>').replace(new RegExp('(?<!href=")([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})',"g"),'<a href="mailto:$1" class="inline-flex items-center text-rose-600 hover:text-rose-700 font-semibold bg-rose-50/50 hover:bg-rose-100/50 px-1.5 py-0.5 rounded-md transition-all border border-rose-100/50">$1<svg class="inline-block ml-1 w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>').replace(/`(.*?)`/g,'<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>').replace(/→/g,'<span class="text-slate-400 mx-1 font-light">→</span>'),U=(N,x,D)=>{const q={1:"text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight",2:"text-3xl font-bold text-slate-900 mt-10 mb-5 tracking-tight",3:"text-2xl font-bold text-slate-800 mt-8 mb-4 tracking-tight",4:"text-xl font-bold text-slate-800 mt-6 mb-3 tracking-tight",5:"text-lg font-bold text-slate-800 mt-4 mb-2 tracking-tight",6:"text-base font-bold text-slate-700 mt-4 mb-2 tracking-tight uppercase tracking-wider"}[N],B=_.jsxs("button",{onClick:()=>y(x.id),className:"opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-rose-500 relative",title:"Copy section link",children:[d===x.id?_.jsx(hu,{size:16,className:"text-emerald-500"}):_.jsx(qh,{size:16}),d===x.id&&_.jsx("span",{className:"absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded whitespace-nowrap",children:"Copied!"})]});switch(N){case 1:return _.jsxs("h1",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);case 2:return _.jsxs("h2",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);case 3:return _.jsxs("h3",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);case 4:return _.jsxs("h4",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);case 5:return _.jsxs("h5",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);case 6:return _.jsxs("h6",{id:x.id,className:`${q} group flex items-center gap-3`,children:[x.content,B]},D);default:return null}};return _.jsx("div",{className:"space-y-4",onClick:T,children:C.map((N,x)=>{if(N.type==="space")return _.jsx("div",{className:"h-2"},x);if(N.type.startsWith("h")){const D=parseInt(N.type.substring(1));return U(D,N,x)}if(N.type==="hr")return _.jsx("hr",{className:"my-12 border-t border-slate-200"},x);if(N.type==="blockquote")return _.jsxs("div",{className:"my-6 pl-6 border-l-4 border-rose-500 bg-rose-50/30 py-4 pr-4 rounded-r-xl flex gap-4",children:[_.jsx(z0,{className:"text-rose-500 shrink-0",size:20}),_.jsx("p",{className:"text-slate-700 italic leading-relaxed",dangerouslySetInnerHTML:{__html:E(N.content)}})]},x);if(N.type==="task")return _.jsxs("div",{className:"flex items-start gap-3 my-3 ml-2",children:[_.jsx("div",{className:"shrink-0 mt-1",children:N.completed?_.jsx(nS,{className:"text-rose-500",size:18}):_.jsx(iS,{className:"text-slate-300",size:18})}),_.jsx("span",{className:`text-slate-600 leading-relaxed ${N.completed?"line-through text-slate-400":""}`,dangerouslySetInnerHTML:{__html:E(N.content)}})]},x);if(N.type==="ul")return _.jsx("ul",{className:"ml-6 list-disc space-y-2 my-4",children:N.items.map((D,q)=>_.jsx("li",{className:"text-slate-600 leading-relaxed pl-2",dangerouslySetInnerHTML:{__html:E(D.content)}},q))},x);if(N.type==="ol")return _.jsx("ol",{className:"ml-6 list-decimal space-y-2 my-4",children:N.items.map((D,q)=>_.jsx("li",{value:D.value,className:"text-slate-600 leading-relaxed pl-2",dangerouslySetInnerHTML:{__html:E(D.content)}},q))},x);if(N.type==="table")return _.jsx("div",{className:"my-8 overflow-hidden rounded-2xl border border-slate-200 shadow-sm max-w-full",children:_.jsx("div",{className:"overflow-x-auto",children:_.jsxs("table",{className:"w-full text-left border-collapse min-w-[600px] md:min-w-full",children:[_.jsx("thead",{children:_.jsx("tr",{className:"bg-slate-50 border-b border-slate-200",children:N.content[0].map((D,q)=>_.jsx("th",{className:"px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500",children:D},q))})}),_.jsx("tbody",{className:"divide-y divide-slate-100",children:N.content.slice(1).map((D,q)=>_.jsx("tr",{className:"hover:bg-slate-50/50 transition-colors",children:D.map((B,X)=>_.jsx("td",{className:"px-6 py-4 text-sm text-slate-600",children:_.jsx("span",{dangerouslySetInnerHTML:{__html:E(B)}})},X))},q))})]})})},x);if(N.type==="code"){const D=N.content.split(`
 `);return _.jsxs("div",{className:"relative group my-8 rounded-xl overflow-hidden border border-slate-800 shadow-2xl max-w-full",children:[_.jsxs("div",{className:"flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700",children:[_.jsxs("div",{className:"flex items-center gap-4",children:[_.jsxs("div",{className:"flex gap-1.5",children:[_.jsx("div",{className:"w-3 h-3 rounded-full bg-rose-500/50"}),_.jsx("div",{className:"w-3 h-3 rounded-full bg-amber-500/50"}),_.jsx("div",{className:"w-3 h-3 rounded-full bg-emerald-500/50"})]}),N.language&&_.jsx("span",{className:"text-[10px] font-bold uppercase tracking-widest text-slate-500",children:N.language})]}),_.jsx("button",{onClick:()=>g(N.content,x),className:"flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors",children:a===x?_.jsxs(_.Fragment,{children:[_.jsx(hu,{size:12,className:"text-emerald-400"}),_.jsx("span",{className:"text-emerald-400",children:"Copied"})]}):_.jsxs(_.Fragment,{children:[_.jsx(D0,{size:12}),_.jsx("span",{children:"Copy Code"})]})})]}),_.jsx("div",{className:"bg-slate-900 overflow-x-auto",children:_.jsxs("pre",{className:"font-mono text-sm leading-6 py-4 flex min-w-full",children:[_.jsx("div",{className:"select-none text-right pr-4 pl-4 border-r border-slate-800 text-slate-600 bg-slate-900/50 sticky left-0 min-w-[3rem]",children:D.map((q,B)=>_.jsx("div",{className:"h-6",children:B+1},B))}),_.jsx("div",{className:"pl-4 pr-8 text-slate-300 min-w-full whitespace-pre",children:D.map((q,B)=>_.jsx("div",{className:"h-6 flex items-center",children:_.jsx("span",{className:"inline-block",children:q||" "})},B))})]})})]},x)}return N.type==="p"?_.jsx("p",{className:"text-slate-600 leading-relaxed text-lg break-words",dangerouslySetInnerHTML:{__html:E(N.content)}},x):null})})};var yS={};/**
