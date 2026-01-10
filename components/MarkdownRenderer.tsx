@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Copy, Check, Quote, Square, CheckSquare, Link as LinkIcon } from 'lucide-react';
 
 interface MarkdownRendererProps {
@@ -8,18 +8,8 @@ interface MarkdownRendererProps {
 }
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate, onHeadersFound }) => {
-  const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
-  const [activeAnchor, setActiveAnchor] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (onHeadersFound) {
-      const blocks = parseBlocks(content);
-      const headers = blocks
-        .filter(b => b.type === 'h2' || b.type === 'h3')
-        .map(b => ({ id: b.id, text: b.content, level: b.type === 'h2' ? 2 : 3 }));
-      onHeadersFound(headers);
-    }
-  }, [content, onHeadersFound]);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -167,7 +157,19 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
     return blocks;
   };
 
-  const blocks = parseBlocks(content);
+  // Memoize blocks parsing to avoid expensive re-computation on every render
+  // Only re-parse when content changes
+  const blocks = useMemo(() => parseBlocks(content), [content]);
+
+  // Notify parent component about headers for Table of Contents
+  useEffect(() => {
+    if (onHeadersFound) {
+      const headers = blocks
+        .filter(b => b.type === 'h2' || b.type === 'h3')
+        .map(b => ({ id: b.id, text: b.content, level: b.type === 'h2' ? 2 : 3 }));
+      onHeadersFound(headers);
+    }
+  }, [blocks, onHeadersFound]);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;

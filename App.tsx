@@ -30,7 +30,42 @@ const App: React.FC = () => {
   const [readingProgress, setReadingProgress] = useState(0);
   const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const sidebarScrollRef = React.useRef<HTMLUListElement>(null);
+
+  // Keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC key closes modals
+      if (e.key === 'Escape') {
+        if (isAiAssistantOpen) {
+          setIsAiAssistantOpen(false);
+        } else if (isMobileSearchOpen) {
+          setIsMobileSearchOpen(false);
+          setSearchQuery('');
+        } else if (isMobileTocOpen) {
+          setIsMobileTocOpen(false);
+        } else if (sidebarOpen) {
+          setSidebarOpen(false);
+        }
+      }
+
+      // Cmd/Ctrl + K opens search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (window.innerWidth < 768) {
+          setIsMobileSearchOpen(true);
+        } else {
+          // Focus the desktop search input
+          const searchInput = document.querySelector<HTMLInputElement>('input[aria-label="Search documentation"]');
+          searchInput?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAiAssistantOpen, isMobileSearchOpen, isMobileTocOpen, sidebarOpen]);
 
   useEffect(() => {
     if (activeSectionId && sidebarScrollRef.current) {
@@ -45,10 +80,10 @@ const App: React.FC = () => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 400);
 
-      // Calculate reading progress
+      // Calculate reading progress (with safety check to prevent division by zero)
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (window.scrollY / totalHeight) * 100;
-      setReadingProgress(progress);
+      const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+      setReadingProgress(Math.min(progress, 100)); // Clamp to 100% max
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -142,6 +177,9 @@ const App: React.FC = () => {
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              aria-expanded={sidebarOpen}
+              aria-controls="sidebar-navigation"
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -173,15 +211,26 @@ const App: React.FC = () => {
                 className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search documentation"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => setIsMobileSearchOpen(true)}
+              className="md:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600"
+              aria-label="Open search"
+            >
+              <Search size={20} />
+            </button>
+
             <div className="relative group">
               <button
                 onClick={() => setIsAiAssistantOpen(true)}
                 className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-md shadow-slate-200 group"
+                aria-label="Open AI Assistant"
               >
                 <Sparkles size={16} className="text-rose-400 group-hover:scale-110 transition-transform" />
                 <span className="hidden sm:inline">Ask AI</span>
@@ -207,11 +256,15 @@ const App: React.FC = () => {
 
       <div className="flex flex-1 max-w-[1440px] mx-auto w-full relative">
         {/* Navigation Sidebar */}
-        <aside className={`
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        <aside
+          id="sidebar-navigation"
+          className={`
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 fixed lg:sticky top-16 h-[calc(100vh-64px)] w-72 border-r border-slate-100 bg-white z-40 transition-transform duration-300 ease-in-out lg:bg-slate-50/30
-        `}>
-          <nav className="p-6 space-y-2 overflow-y-auto h-full hide-scrollbar">
+        `}
+          aria-label="Main navigation"
+        >
+          <nav className="p-6 space-y-2 overflow-y-auto h-full hide-scrollbar" role="navigation">
             <div className="mb-8">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-4">Core Documentation</p>
               <div className="space-y-1">
@@ -451,14 +504,38 @@ const App: React.FC = () => {
       {/* AI Assistant Overlay */}
       <AIAssistant isOpen={isAiAssistantOpen} onClose={() => setIsAiAssistantOpen(false)} />
 
-      {/* Mobile Search Overlay (when active) */}
-      {searchQuery && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bg-white border-b border-slate-200 p-6 z-50 shadow-2xl h-[calc(100vh-64px)] overflow-y-auto">
+      {/* Mobile Search Overlay */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden fixed inset-x-0 top-16 bg-white border-b border-slate-200 p-6 z-50 shadow-2xl h-[calc(100vh-64px)] overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Search Results ({Object.keys(filteredDocs).length})</p>
-            <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-slate-900">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              {searchQuery ? `Search Results (${Object.keys(filteredDocs).length})` : 'Search Documentation'}
+            </p>
+            <button
+              onClick={() => {
+                setIsMobileSearchOpen(false);
+                setSearchQuery('');
+              }}
+              className="p-1 text-slate-400 hover:text-slate-900"
+              aria-label="Close search"
+            >
               <X size={20} />
             </button>
+          </div>
+
+          {/* Mobile Search Input */}
+          <div className="relative w-full group mb-6">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="text-slate-400 group-focus-within:text-rose-500 transition-colors" size={18} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search across 60+ guides..."
+              className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+            />
           </div>
           <div className="space-y-3">
             {Object.keys(filteredDocs).length > 0 ? (
@@ -467,7 +544,11 @@ const App: React.FC = () => {
                 return (
                   <button
                     key={key}
-                    onClick={() => { setActiveTab(key); setSearchQuery(''); }}
+                    onClick={() => {
+                      setActiveTab(key);
+                      setSearchQuery('');
+                      setIsMobileSearchOpen(false);
+                    }}
                     className="w-full text-left p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-2xl group transition-all"
                   >
                     <div className="flex items-center gap-3">
@@ -493,6 +574,7 @@ const App: React.FC = () => {
           <button
             onClick={scrollToTop}
             className="p-4 bg-rose-500 text-white rounded-2xl shadow-2xl shadow-rose-200 hover:bg-rose-600 hover:-translate-y-1 active:scale-95 transition-all"
+            aria-label="Scroll back to top"
           >
             <ArrowUp size={24} />
           </button>

@@ -2,6 +2,29 @@
 import { GoogleGenAI } from "@google/genai";
 import { DOCS_CONTENT } from "../constants";
 
+/**
+ * ⚠️ SECURITY WARNING: This implementation exposes the API key in the client bundle!
+ *
+ * The API key is embedded directly in the compiled JavaScript, making it visible to anyone.
+ * This is acceptable ONLY if:
+ * 1. You use API key restrictions (HTTP referrer restrictions) in Google Cloud Console
+ * 2. You set up billing alerts and quota limits
+ * 3. This is for a demo/prototype only
+ *
+ * RECOMMENDED: Move this to a backend API endpoint that:
+ * - Keeps the API key server-side
+ * - Implements rate limiting
+ * - Validates requests before calling Gemini
+ *
+ * Example backend (Node.js/Express):
+ * ```
+ * app.post('/api/chat', async (req, res) => {
+ *   const { query } = req.body;
+ *   const response = await geminiClient.generateContent(query);
+ *   res.json({ response });
+ * });
+ * ```
+ */
 export const askGeminiAssistant = async (query: string): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 

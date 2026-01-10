@@ -16,12 +16,36 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to latest message
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Focus management - focus input when modal opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -40,13 +64,19 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[450px] bg-white shadow-2xl z-[60] flex flex-col border-l border-slate-200 transition-transform transform translate-x-0">
+    <div
+      ref={modalRef}
+      className="fixed inset-y-0 right-0 w-full sm:w-[450px] bg-white shadow-2xl z-[60] flex flex-col border-l border-slate-200 transition-transform transform translate-x-0"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-assistant-title"
+    >
       <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-rose-500 to-rose-600 text-white">
         <div className="flex items-center gap-2">
           <Sparkles size={20} />
-          <h3 className="font-bold">Technical Assistant</h3>
+          <h3 id="ai-assistant-title" className="font-bold">Technical Assistant</h3>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+        <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors" aria-label="Close AI Assistant">
           <X size={24} />
         </button>
       </div>
@@ -91,12 +121,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       <div className="p-4 border-t border-slate-100 bg-white">
         <div className="flex gap-2 relative">
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask a technical question..."
             className="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none pr-12"
+            aria-label="Ask a question"
           />
           <button 
             onClick={handleSend}
