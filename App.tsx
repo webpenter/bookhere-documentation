@@ -31,6 +31,9 @@ const App: React.FC = () => {
   const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [loadedContent, setLoadedContent] = useState<Record<string, string>>({});
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const loadingRef = React.useRef<Set<string>>(new Set());
   const sidebarScrollRef = React.useRef<HTMLUListElement>(null);
 
   // Keyboard navigation support
@@ -66,6 +69,97 @@ const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isAiAssistantOpen, isMobileSearchOpen, isMobileTocOpen, sidebarOpen]);
+
+  // Load content lazily when activeTab changes
+  useEffect(() => {
+    const loadSectionContent = async () => {
+      const section = DOCS_CONTENT[activeTab];
+      if (!section) {
+        // Check if it's a subItem
+        for (const parent of Object.values(DOCS_CONTENT)) {
+          if (parent.subItems && parent.subItems[activeTab]) {
+            // Check if parent content is loaded or is loading
+            const parentKey = Object.keys(DOCS_CONTENT).find(key => DOCS_CONTENT[key].subItems && DOCS_CONTENT[key].subItems![activeTab]);
+            if (parentKey && !loadingRef.current.has(parentKey) && parent.loadContent) {
+              // Check if content is already loaded
+              setLoadedContent(prev => {
+                if (prev[activeTab]) return prev; // Already loaded
+
+                // Mark as loading
+                loadingRef.current.add(parentKey);
+                setIsLoadingContent(true);
+
+                // Load parent content which includes subItems
+                parent.loadContent().then(loadedSection => {
+                  setLoadedContent(current => ({
+                    ...current,
+                    [parentKey]: loadedSection.content || '',
+                    // Also load all subItems content
+                    ...Object.fromEntries(
+                      Object.entries(loadedSection.subItems || {}).map(([key, subItem]) => [key, subItem.content])
+                    )
+                  }));
+                  loadingRef.current.delete(parentKey);
+                  setIsLoadingContent(false);
+                }).catch(error => {
+                  console.error(`Failed to load content for ${parentKey}:`, error);
+                  loadingRef.current.delete(parentKey);
+                  setIsLoadingContent(false);
+                });
+
+                return prev;
+              });
+            }
+            return;
+          }
+        }
+        return;
+      }
+
+      // Check if we're already loading or have loaded this section
+      if (loadingRef.current.has(activeTab)) return;
+
+      // Check using functional setState to get current value
+      setLoadedContent(prev => {
+        // If already loaded, don't reload
+        if (prev[activeTab]) return prev;
+
+        // If section has loadContent function, load it
+        if (section.loadContent) {
+          // Mark as loading
+          loadingRef.current.add(activeTab);
+          setIsLoadingContent(true);
+
+          section.loadContent().then(loadedSection => {
+            setLoadedContent(current => ({
+              ...current,
+              [activeTab]: loadedSection.content || '',
+              // Also load all subItems content if they exist
+              ...Object.fromEntries(
+                Object.entries(loadedSection.subItems || {}).map(([key, subItem]) => [key, subItem.content])
+              )
+            }));
+            loadingRef.current.delete(activeTab);
+            setIsLoadingContent(false);
+          }).catch(error => {
+            console.error(`Failed to load content for ${activeTab}:`, error);
+            loadingRef.current.delete(activeTab);
+            setIsLoadingContent(false);
+          });
+        } else if (section.content) {
+          // If section already has content
+          return {
+            ...prev,
+            [activeTab]: section.content || ''
+          };
+        }
+
+        return prev;
+      });
+    };
+
+    loadSectionContent();
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeSectionId && sidebarScrollRef.current) {
@@ -154,14 +248,37 @@ const App: React.FC = () => {
   }, [searchQuery]);
 
   const activeSection = useMemo(() => {
-    if (DOCS_CONTENT[activeTab]) return DOCS_CONTENT[activeTab];
-    for (const parent of Object.values(DOCS_CONTENT)) {
-      if (parent.subItems && parent.subItems[activeTab]) {
-        return parent.subItems[activeTab];
+    let section: DocSection | undefined = DOCS_CONTENT[activeTab];
+    let parentIcon: any = undefined;
+
+    if (!section) {
+      // Check if it's a subItem
+      for (const parent of Object.values(DOCS_CONTENT)) {
+        if (parent.subItems && parent.subItems[activeTab]) {
+          const subItem = parent.subItems[activeTab];
+          parentIcon = parent.icon;
+          // Convert subItem to full DocSection
+          section = {
+            title: subItem.title,
+            icon: subItem.icon || parentIcon,
+            content: subItem.content,
+            tags: subItem.tags
+          };
+          break;
+        }
       }
     }
-    return DOCS_CONTENT['getting_started'];
-  }, [activeTab]);
+
+    if (!section) {
+      section = DOCS_CONTENT['getting_started'];
+    }
+
+    // Return section with loaded content if available
+    return {
+      ...section,
+      content: loadedContent[activeTab] || section.content || ''
+    };
+  }, [activeTab, loadedContent]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-rose-100 selection:text-rose-900">
@@ -373,17 +490,31 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <MarkdownRenderer
-                content={activeSection.content || ''}
-                onNavigate={(tab) => {
-                  const exists = DOCS_CONTENT[tab] || Object.values(DOCS_CONTENT).some(p => p.subItems && p.subItems[tab]);
-                  if (exists) {
-                    setActiveTab(tab);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
-                }}
-                onHeadersFound={setActiveHeaders}
-              />
+              {isLoadingContent ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-8 bg-slate-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-slate-200 rounded w-4/5"></div>
+                  <div className="h-8 bg-slate-200 rounded w-2/3 mt-8"></div>
+                  <div className="h-4 bg-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                  <p className="text-center text-slate-500 text-sm mt-8">Loading documentation...</p>
+                </div>
+              ) : (
+                <MarkdownRenderer
+                  content={activeSection.content || ''}
+                  onNavigate={(tab) => {
+                    const exists = DOCS_CONTENT[tab] || Object.values(DOCS_CONTENT).some(p => p.subItems && p.subItems[tab]);
+                    if (exists) {
+                      setActiveTab(tab);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  onHeadersFound={setActiveHeaders}
+                />
+              )}
             </article>
 
             {/* Footer Navigation */}

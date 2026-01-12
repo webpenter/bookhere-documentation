@@ -12,6 +12,8 @@ export interface DocSection {
     content: string;
     tags?: string[];
   }>;
+  // For lazy loading - function to load content dynamically
+  loadContent?: () => Promise<DocSection>;
 }
 
 export type DocsContent = Record<string, DocSection>;
