@@ -1,4 +1,4 @@
-import{c as e}from"./index-CSOSwc9M.js";const i={title:"Security",icon:e,tags:["authentication","encryption","best-practices"],content:`
+import{c as e}from"./index-Db6kKY5h.js";const i={title:"Security",icon:e,tags:["authentication","encryption","best-practices"],content:`
 # Security Policy
 
 BookHere - Property Rental Mobile App

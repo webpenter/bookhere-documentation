@@ -1,4 +1,4 @@
-import{T as e}from"./index-CSOSwc9M.js";const t={title:"Installation",icon:e,tags:["setup","terminal","wordpress"],content:`
+import{T as e}from"./index-Db6kKY5h.js";const t={title:"Installation",icon:e,tags:["setup","terminal","wordpress"],content:`
 # Installation Guide - BookHere Mobile App
 
 Complete step-by-step installation guide for setting up the BookHere property rental mobile application.

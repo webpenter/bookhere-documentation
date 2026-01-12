@@ -1,4 +1,4 @@
-import{Z as e}from"./index-CSOSwc9M.js";const i={title:"Features",icon:e,tags:["capabilities","functionality","highlights"],content:`
+import{Z as e}from"./index-Db6kKY5h.js";const i={title:"Features",icon:e,tags:["capabilities","functionality","highlights"],content:`
 # BookHere Mobile App - Complete Features Guide
 
 Comprehensive documentation of all features, functions, and capabilities in the BookHere property rental mobile application.

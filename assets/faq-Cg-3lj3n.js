@@ -1,4 +1,4 @@
-import{C as e}from"./index-CSOSwc9M.js";const t={title:"FAQ",icon:e,tags:["help","qa","rtl"],content:`
+import{C as e}from"./index-Db6kKY5h.js";const t={title:"FAQ",icon:e,tags:["help","qa","rtl"],content:`
 # Frequently Asked Questions (FAQ)
 
 Common questions and answers about the BookHere mobile app.

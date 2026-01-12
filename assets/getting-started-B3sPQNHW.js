@@ -1,4 +1,4 @@
-import{B as e}from"./index-CSOSwc9M.js";const o={title:"Getting Started",icon:e,tags:["welcome","overview","stack"],content:`
+import{B as e}from"./index-Db6kKY5h.js";const o={title:"Getting Started",icon:e,tags:["welcome","overview","stack"],content:`
 # Welcome to BookHere v3.0.1
 
 Thank you for choosing BookHere, the premium property rental mobile application. This documentation will guide you through setting up your own marketplace.

@@ -1,4 +1,4 @@
-import{W as e}from"./index-CSOSwc9M.js";const s={title:"Troubleshooting",icon:e,tags:["errors","debug","fixes"],content:`
+import{W as e}from"./index-Db6kKY5h.js";const s={title:"Troubleshooting",icon:e,tags:["errors","debug","fixes"],content:`
 # Troubleshooting Guide - BookHere Mobile App
 
 Common issues and solutions for the BookHere mobile application.

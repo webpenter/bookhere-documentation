@@ -1,4 +1,4 @@
-import{a as e}from"./index-CSOSwc9M.js";const a={title:"Changelog",icon:e,tags:["updates","releases","versions"],content:`
+import{a as e}from"./index-Db6kKY5h.js";const a={title:"Changelog",icon:e,tags:["updates","releases","versions"],content:`
 # Changelog
 
 All notable changes to the BookHere mobile application will be documented in this file.

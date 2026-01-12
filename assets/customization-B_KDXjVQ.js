@@ -1,4 +1,4 @@
-import{W as e}from"./index-CSOSwc9M.js";const o={title:"Customization",icon:e,tags:["branding","ui","colors"],content:`
+import{W as e}from"./index-Db6kKY5h.js";const o={title:"Customization",icon:e,tags:["branding","ui","colors"],content:`
 
 # Customization Guide - BookHere Mobile App
 

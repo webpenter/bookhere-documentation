@@ -1,4 +1,4 @@
-import{b as e,P as o,E as i}from"./index-CSOSwc9M.js";const s={title:"App Submission",icon:i,subItems:{play_store:{title:"Google Play Store",icon:o,tags:["android","submission","checklist"],content:`
+import{b as e,P as o,E as i}from"./index-Db6kKY5h.js";const s={title:"App Submission",icon:i,subItems:{play_store:{title:"Google Play Store",icon:o,tags:["android","submission","checklist"],content:`
 # Google Play Store Submission Checklist
 
 This comprehensive checklist will guide you through preparing and submitting your BookHere app to the Google Play Store.

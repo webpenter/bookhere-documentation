@@ -1,4 +1,4 @@
-import{S as e}from"./index-CSOSwc9M.js";const n={title:"Configuration",icon:e,tags:["env","api","stripe"],content:`
+import{S as e}from"./index-Db6kKY5h.js";const n={title:"Configuration",icon:e,tags:["env","api","stripe"],content:`
 # Configuration Guide - BookHere Mobile App
 
 Complete configuration guide for setting up and customizing BookHere mobile application.
