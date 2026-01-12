@@ -146,7 +146,7 @@ If implementing a backend is not feasible:
 git log --all --full-history -- .env.local
 
 # Check if API key appears in git history
-git log -S "AIzaSyCzFi-jyqddQER9s3a0zLuzwc1tILqbim0" --all
+git log -S "AIzaS......" --all
 ```
 
 ### If Key Was Committed to Git:
