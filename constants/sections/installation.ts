@@ -1,5 +1,6 @@
 import { Terminal } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const installation: DocSection = {
   title: "Installation",
@@ -121,13 +122,7 @@ Create accounts on the following platforms (free unless noted):
    - Run the installer and follow the prompts
 
 2. **Verify Installation**
-   \`\`\`bash
-node --version
-   # Should output: v18.x.x or higher
-
-npm --version
-   # Should output: 8.x.x or higher
-\`\`\`
+   ${snippet('checkNodeVersion')}
 
 ### Step 2: Install Expo CLI (Optional but Recommended)
 
@@ -224,13 +219,7 @@ cd bookhere-mobile-app
 
 ### Step 2: Install Dependencies
 
-\`\`\`bash
-# Using npm
-npm install
-
-# OR using Yarn (if you prefer)
-yarn install
-  \`\`\`
+${snippet('npmInstall')}
 
 This will install all required packages from \`package.json\`. The installation may take 5-10 minutes depending on your internet connection.
 
@@ -511,15 +500,13 @@ If you already have a WordPress site with Homey theme:
 
 ### Development Mode
 
-1. ** Start Development Server **
-  \`\`\`bash
-   npm start
-   \`\`\`
+1. **Start Development Server**
+   ${snippet('npmStart')}
 
    This will:
-- Start Metro bundler
-  - Open Expo Dev Tools in browser
-    - Display QR code for testing
+   - Start Metro bundler
+   - Open Expo Dev Tools in browser
+   - Display QR code for testing
 
 2. ** Run on iOS Simulator(macOS only) **
   \`\`\`bash
@@ -573,10 +560,8 @@ If you already have a WordPress site with Homey theme:
 
 ### Common Startup Issues
 
-  ** Metro bundler error:**
-    \`\`\`bash
-npm start --clear
-\`\`\`
+**Metro bundler error:**
+${snippet('fixMetroCache')}
 
     ** iOS build error:**
       \`\`\`bash

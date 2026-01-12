@@ -1,5 +1,6 @@
 import { Wrench } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const troubleshooting: DocSection = {
   title: "Troubleshooting",
@@ -34,19 +35,7 @@ Common issues and solutions for the BookHere mobile application.
 **Problem:** After running \`npm install\`, getting "Cannot find module" errors
 
 **Solution:**
-\`\`\`bash
-# 1. Clear npm cache
-npm cache clean --force
-
-# 2. Remove node_modules and lock file
-rm - rf node_modules package - lock.json
-
-# 3. Reinstall dependencies
-npm install
-
-# 4. If on iOS, reinstall pods
-cd ios && pod install && cd..
-\`\`\`
+${snippet('clearAllCaches', true)}
 
 ---
 
@@ -114,16 +103,7 @@ expo --version
 **Problem:** Metro bundler crashes or shows errors
 
 **Solution:**
-\`\`\`bash
-# Clear Metro cache
-npm start --clear
-
-# OR
-npx react-native start --reset-cache
-
-# If still failing, clear watchman
-watchman watch-del-all
-  \`\`\`
+${snippet('fixMetroCache', true)}
 
 ---
 
@@ -132,25 +112,7 @@ watchman watch-del-all
 **Problem:** Pod install fails or iOS build errors
 
 **Solution:**
-\`\`\`bash
-# Navigate to iOS directory
-cd ios
-
-# Remove Pods and Podfile.lock
-rm -rf Pods Podfile.lock
-
-# Reinstall pods
-pod deintegrate
-pod install
-
-# If still failing, update CocoaPods
-sudo gem install cocoapods
-
-# Then retry
-pod install --repo-update
-
-cd..
-\`\`\`
+${snippet('fixIOSPods', true)}
 
 ---
 
@@ -159,23 +121,7 @@ cd..
 **Problem:** Android build fails during Gradle compilation
 
 **Solution:**
-\`\`\`bash
-# Navigate to android directory
-cd android
-
-# Clean build
-  ./gradlew clean
-
-# If permission denied
-chmod + x gradlew
-
-# Clear Gradle cache
-rm -rf .gradle
-
-# Return to root and rebuild
-cd..
-npx expo run:android
-  \`\`\`
+${snippet('fixAndroidGradle', true)}
 
 ---
 

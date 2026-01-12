@@ -1,5 +1,6 @@
 import { Settings } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const configuration: DocSection = {
   title: "Configuration",
@@ -730,21 +731,13 @@ Build number increments automatically with EAS.Manual control in \`app.json\`:
 
 ### Development vs Production
 
-Create multiple \`.env\` files:
+Create multiple environment files for different stages:
 
-** \`.env.development\`:**
-  \`\`\`env
-API_URL=https://dev.yourapp.com/
-STRIPE_KEY=pk_test_xxx
-DEBUG_MODE=true
-\`\`\`
+**Development Environment:**
+${snippet('envDevelopment', true)}
 
-  ** \`.env.production\`:**
-    \`\`\`env
-API_URL=https://yourapp.com/
-STRIPE_KEY=pk_live_xxx
-DEBUG_MODE=false
-\`\`\`
+**Production Environment:**
+${snippet('envProduction', true)}
 
 ### Loading Environment Variables
 
