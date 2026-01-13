@@ -1,5 +1,6 @@
 import { Wrench } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const customization: DocSection = {
     title: "Customization",
@@ -166,9 +167,7 @@ export const Layout = {
 After updating colors:
 
 1. **Restart development server:**
-   \`\`\`bash
-   npm start --clear
-  \`\`\`
+   ${snippet('fixMetroCache')}
 
 2. **Reload app** on device/simulator
 

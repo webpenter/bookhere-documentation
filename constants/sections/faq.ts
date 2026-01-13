@@ -1,5 +1,6 @@
 import { HelpCircle } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const faq: DocSection = {
   title: "FAQ",
@@ -340,10 +341,7 @@ Yes, use Expo Go app to test on physical devices during development without buil
 ### Installation fails with "Cannot find module" errors
 
 This usually means dependencies weren't installed correctly:
-\`\`\`bash
-rm - rf node_modules package-lock.json
-npm install
-  \`\`\`
+${snippet('clearCache')}
 
 ---
 
@@ -513,13 +511,12 @@ The app includes a wallet/earnings dashboard for hosts. You'll need to implement
 ### How do I build the app for production?
 
 Using EAS Build:
-\`\`\`bash
-# iOS
-eas build --platform ios --profile production
 
-# Android
-eas build --platform android --profile production
-  \`\`\`
+**iOS:**
+${snippet('easBuildIOS')}
+
+**Android:**
+${snippet('easBuildAndroid')}
 
 ### Do I need a Mac to build for iOS?
 
@@ -641,8 +638,8 @@ Check:
 ### App crashes on startup
 
 Try:
-1. Clear cache: \`npm start --clear\`
-2. Reinstall dependencies: \`rm - rf node_modules && npm install\`
+1. Clear cache: ${snippet('fixMetroCache')}
+2. Reinstall dependencies: ${snippet('clearCache')}
 3. Check console for error messages
 
 ### Images not uploading
@@ -655,11 +652,8 @@ Verify:
 
 ### How do I enable debug mode?
 
-\`\`\`bash
-# React Native debugger
-npm start
-# Then press 'j' for JavaScript debugger
-\`\`\`
+${snippet('npmStart')}
+Then press 'j' for JavaScript debugger
 
 ### Can I use with Expo Go?
 
@@ -727,37 +721,23 @@ npm install
 
 ### Metro bundler errors
 
-\`\`\`bash
-npm start --clear
-  \`\`\`
+${snippet('fixMetroCache')}
 
 ### iOS build issues
 
-\`\`\`bash
-cd ios
-rm -rf build
-pod deintegrate
-pod install
-cd..
-\`\`\`
+${snippet('fixIOSPods')}
 
 ### Android build issues
 
-\`\`\`bash
-cd android
-./gradlew clean
-cd..
-\`\`\`
+${snippet('fixAndroidGradle')}
 
 ### Environment changes not reflecting
 
-\`\`\`bash
-# Clear cache
-npm start --clear
+**Clear cache:**
+${snippet('fixMetroCache')}
 
-# Rebuild app
-eas build --platform all --profile development
-  \`\`\`
+**Rebuild app:**
+${snippet('easBuildPreview')}
 
 ---
 

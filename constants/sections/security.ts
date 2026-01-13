@@ -1,5 +1,6 @@
 import { ShieldCheck } from 'lucide-react';
 import { DocSection } from '../../types';
+import { snippet } from '../snippets';
 
 export const security: DocSection = {
   title: "Security",
