@@ -29,8 +29,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
     return text
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/\s/g, '-')
       .trim();
   };
 

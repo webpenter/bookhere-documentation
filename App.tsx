@@ -254,8 +254,7 @@ const App: React.FC = () => {
     return text
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/\s/g, '-')
       .trim();
   };
 
@@ -314,18 +313,25 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!pendingScrollTarget || isLoadingContent) return;
 
-    // Small delay to ensure DOM has rendered the headings
-    const timer = setTimeout(() => {
+    // Poll for the element to appear in the DOM (content may still be rendering)
+    let attempts = 0;
+    const maxAttempts = 20;
+    const poll = setInterval(() => {
+      attempts++;
       const element = document.getElementById(pendingScrollTarget);
       if (element) {
+        clearInterval(poll);
         const yOffset = -80;
         const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: 'smooth' });
+        setPendingScrollTarget(null);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(poll);
+        setPendingScrollTarget(null);
       }
-      setPendingScrollTarget(null);
-    }, 300);
+    }, 150);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(poll);
   }, [pendingScrollTarget, isLoadingContent, activeHeaders]);
 
   const scrollToTop = () => {
@@ -352,11 +358,9 @@ const App: React.FC = () => {
     if (query) {
       const slug = findMatchingHeadingSlug(sectionKey, query);
       if (slug) {
-        if (activeTab === sectionKey) {
-          // Already on the right page, just scroll
-          handleHeaderClick(slug);
-        } else {
-          setPendingScrollTarget(slug);
+        // Always use pendingScrollTarget for reliable scroll-after-render
+        setPendingScrollTarget(slug);
+        if (activeTab !== sectionKey) {
           setActiveTab(sectionKey);
         }
         return;
