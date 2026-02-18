@@ -5,9 +5,10 @@ interface MarkdownRendererProps {
   content: string;
   onNavigate?: (tab: string) => void;
   onHeadersFound?: (headers: { id: string; text: string; level: number }[]) => void;
+  highlightTerm?: string;
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate, onHeadersFound }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate, onHeadersFound, highlightTerm }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
 
@@ -220,6 +221,47 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
       .replace(/→/g, '<span class="text-slate-400 mx-1 font-light">→</span>');
   };
 
+  const applyHighlight = (html: string): string => {
+    if (!html || !highlightTerm || highlightTerm.length < 2) return html || '';
+    try {
+      const escaped = highlightTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = html.split(/(<[^>]*>)/g);
+      return parts.map(part => {
+        if (!part || part.startsWith('<')) return part || '';
+        return part.replace(new RegExp(`(${escaped})`, 'gi'),
+          '<mark class="bg-amber-200 text-amber-900 px-0.5 rounded-sm search-highlight">$1</mark>'
+        );
+      }).join('');
+    } catch {
+      return html;
+    }
+  };
+
+  const highlightText = (text: string): React.ReactNode => {
+    if (!text || !highlightTerm || highlightTerm.length < 2) return text || '';
+    try {
+      const escaped = highlightTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
+      if (parts.length === 1) return text;
+      return parts.map((part, i) =>
+        part.toLowerCase() === highlightTerm.toLowerCase()
+          ? <mark key={i} className="bg-amber-200 text-amber-900 px-0.5 rounded-sm search-highlight">{part}</mark>
+          : part
+      );
+    } catch {
+      return text;
+    }
+  };
+
+  const processWithHighlight = (text: string): string => {
+    if (!text) return '';
+    try {
+      return applyHighlight(processInlineMarkdown(text));
+    } catch {
+      return processInlineMarkdown(text);
+    }
+  };
+
   const renderHeading = (level: number, block: any, i: number) => {
     const styles = {
       1: "text-4xl font-extrabold text-slate-900 mt-12 mb-6 border-b border-slate-200 pb-4 tracking-tight",
@@ -249,13 +291,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
       </button>
     );
 
+    const highlighted = highlightText(block.content);
+
     switch (level) {
-      case 1: return <h1 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h1>;
-      case 2: return <h2 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h2>;
-      case 3: return <h3 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h3>;
-      case 4: return <h4 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h4>;
-      case 5: return <h5 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h5>;
-      case 6: return <h6 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{block.content}{anchorButton}</h6>;
+      case 1: return <h1 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h1>;
+      case 2: return <h2 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h2>;
+      case 3: return <h3 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h3>;
+      case 4: return <h4 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h4>;
+      case 5: return <h5 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h5>;
+      case 6: return <h6 key={i} id={block.id} className={`${styles} group flex items-center gap-3`}>{highlighted}{anchorButton}</h6>;
       default: return null;
     }
   };
@@ -264,20 +308,19 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
     <div className="space-y-4" onClick={handleLinkClick}>
       {blocks.map((block, i) => {
         if (block.type === 'space') return <div key={i} className="h-2" />;
+        if (block.type === 'hr') {
+          return <hr key={i} className="my-12 border-t border-slate-200" />;
+        }
         if (block.type.startsWith('h')) {
           const level = parseInt(block.type.substring(1));
           return renderHeading(level, block, i);
-        }
-
-        if (block.type === 'hr') {
-          return <hr key={i} className="my-12 border-t border-slate-200" />;
         }
 
         if (block.type === 'blockquote') {
           return (
             <div key={i} className="my-6 pl-6 border-l-4 border-rose-500 bg-rose-50/30 py-4 pr-4 rounded-r-xl flex gap-4">
               <Quote className="text-rose-500 shrink-0" size={20} />
-              <p className="text-slate-700 italic leading-relaxed" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />
+              <p className="text-slate-700 italic leading-relaxed" dangerouslySetInnerHTML={{ __html: processWithHighlight(block.content) }} />
             </div>
           );
         }
@@ -291,7 +334,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
                   <Square className="text-slate-300" size={18} />
                 }
               </div>
-              <span className={`text-slate-600 leading-relaxed ${block.completed ? 'line-through text-slate-400' : ''}`} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }} />
+              <span className={`text-slate-600 leading-relaxed ${block.completed ? 'line-through text-slate-400' : ''}`} dangerouslySetInnerHTML={{ __html: processWithHighlight(block.content) }} />
             </div>
           );
         }
@@ -300,7 +343,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
           return (
             <ul key={i} className="ml-6 list-disc space-y-2 my-4">
               {block.items.map((item: any, idx: number) => (
-                <li key={idx} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(item.content) }} />
+                <li key={idx} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processWithHighlight(item.content) }} />
               ))}
             </ul>
           );
@@ -310,7 +353,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
           return (
             <ol key={i} className="ml-6 list-decimal space-y-2 my-4">
               {block.items.map((item: any, idx: number) => (
-                <li key={idx} value={item.value} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processInlineMarkdown(item.content) }} />
+                <li key={idx} value={item.value} className="text-slate-600 leading-relaxed pl-2" dangerouslySetInnerHTML={{ __html: processWithHighlight(item.content) }} />
               ))}
             </ol>
           );
@@ -335,7 +378,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
                       <tr key={rowIdx} className="hover:bg-slate-50/50 transition-colors">
                         {row.map((cell: string, cellIdx: number) => (
                           <td key={cellIdx} className="px-6 py-4 text-sm text-slate-600">
-                            <span dangerouslySetInnerHTML={{ __html: processInlineMarkdown(cell) }} />
+                            <span dangerouslySetInnerHTML={{ __html: processWithHighlight(cell) }} />
                           </td>
                         ))}
                       </tr>
@@ -390,7 +433,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
                   <div className="pl-4 pr-8 text-slate-300 min-w-full whitespace-pre">
                     {codeLines.map((line: string, idx: number) => (
                       <div key={idx} className="h-6 flex items-center">
-                        <span className="inline-block">{line || ' '}</span>
+                        <span className="inline-block">{highlightTerm ? highlightText(line || ' ') : (line || ' ')}</span>
                       </div>
                     ))}
                   </div>
@@ -405,7 +448,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onNavigate
             <p
               key={i}
               className="text-slate-600 leading-relaxed text-lg break-words"
-              dangerouslySetInnerHTML={{ __html: processInlineMarkdown(block.content) }}
+              dangerouslySetInnerHTML={{ __html: processWithHighlight(block.content) }}
             />
           );
         }

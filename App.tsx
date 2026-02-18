@@ -31,10 +31,25 @@ const App: React.FC = () => {
   const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isDesktopSearchFocused, setIsDesktopSearchFocused] = useState(false);
   const [loadedContent, setLoadedContent] = useState<Record<string, string>>({});
+  const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
+  const [searchHighlight, setSearchHighlight] = useState<string>('');
+  const desktopSearchRef = React.useRef<HTMLDivElement>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const loadingRef = React.useRef<Set<string>>(new Set());
   const sidebarScrollRef = React.useRef<HTMLUListElement>(null);
+
+  // Close desktop search dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target as Node)) {
+        setIsDesktopSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Keyboard navigation support
   useEffect(() => {
@@ -69,6 +84,38 @@ const App: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isAiAssistantOpen, isMobileSearchOpen, isMobileTocOpen, sidebarOpen]);
+
+  // Preload all section content in background for search
+  useEffect(() => {
+    const preloadAllContent = async () => {
+      for (const [key, section] of Object.entries(DOCS_CONTENT)) {
+        if (section.loadContent && !loadingRef.current.has(key)) {
+          loadingRef.current.add(key);
+          try {
+            const loaded = await section.loadContent();
+            setLoadedContent(prev => {
+              if (prev[key]) return prev; // Already loaded by active tab
+              return {
+                ...prev,
+                [key]: loaded.content || '',
+                ...Object.fromEntries(
+                  Object.entries(loaded.subItems || {}).map(([subKey, subItem]) => [subKey, subItem.content])
+                )
+              };
+            });
+          } catch (error) {
+            console.error(`Failed to preload content for ${key}:`, error);
+          } finally {
+            loadingRef.current.delete(key);
+          }
+        }
+      }
+    };
+
+    // Delay preloading slightly so the active tab loads first
+    const timer = setTimeout(preloadAllContent, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Load content lazily when activeTab changes
   useEffect(() => {
@@ -203,6 +250,84 @@ const App: React.FC = () => {
     return () => observer.disconnect();
   }, [activeHeaders]);
 
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  // Find the best matching heading slug for a search query within a section's content
+  const findMatchingHeadingSlug = (sectionKey: string, query: string): string | null => {
+    // Check loaded content first, then fall back to static content
+    let content = loadedContent[sectionKey] || '';
+
+    // If not in loadedContent, check DOCS_CONTENT and subItems
+    if (!content) {
+      const section = DOCS_CONTENT[sectionKey];
+      if (section) {
+        content = section.content || '';
+      } else {
+        // Check sub-items
+        for (const parent of Object.values(DOCS_CONTENT)) {
+          if (parent.subItems && parent.subItems[sectionKey]) {
+            content = parent.subItems[sectionKey].content || '';
+            break;
+          }
+        }
+      }
+    }
+
+    if (!content) return null;
+
+    const lowerQuery = query.toLowerCase();
+    const lowerContent = content.toLowerCase();
+
+    // First, check if query directly matches a heading
+    const headingRegex = /^#{1,6}\s+(.+)$/gm;
+    let match: RegExpExecArray | null;
+    while ((match = headingRegex.exec(content)) !== null) {
+      const headingText = match[1].trim();
+      if (headingText.toLowerCase().includes(lowerQuery)) {
+        return slugify(headingText);
+      }
+    }
+
+    // If no heading matches, find the nearest heading above the first text occurrence
+    const textIndex = lowerContent.indexOf(lowerQuery);
+    if (textIndex === -1) return null;
+
+    // Collect all headings with their positions
+    const headingPosRegex = /^#{1,6}\s+(.+)$/gm;
+    let lastHeadingSlug: string | null = null;
+    while ((match = headingPosRegex.exec(content)) !== null) {
+      if (match.index > textIndex) break;
+      lastHeadingSlug = slugify(match[1].trim());
+    }
+
+    return lastHeadingSlug;
+  };
+
+  // Scroll to pending target after content renders
+  useEffect(() => {
+    if (!pendingScrollTarget || isLoadingContent) return;
+
+    // Small delay to ensure DOM has rendered the headings
+    const timer = setTimeout(() => {
+      const element = document.getElementById(pendingScrollTarget);
+      if (element) {
+        const yOffset = -80;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      setPendingScrollTarget(null);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [pendingScrollTarget, isLoadingContent, activeHeaders]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -216,6 +341,31 @@ const App: React.FC = () => {
     }
   };
 
+  // Navigate to a section and optionally scroll to a matching heading
+  const handleSearchNavigate = (sectionKey: string, query?: string) => {
+    // Set highlight term and auto-clear after 8 seconds
+    if (query && query.length >= 2) {
+      setSearchHighlight(query);
+      setTimeout(() => setSearchHighlight(''), 8000);
+    }
+
+    if (query) {
+      const slug = findMatchingHeadingSlug(sectionKey, query);
+      if (slug) {
+        if (activeTab === sectionKey) {
+          // Already on the right page, just scroll
+          handleHeaderClick(slug);
+        } else {
+          setPendingScrollTarget(slug);
+          setActiveTab(sectionKey);
+        }
+        return;
+      }
+    }
+    setActiveTab(sectionKey);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const filteredDocs = useMemo<DocsContent>(() => {
     if (!searchQuery) return DOCS_CONTENT;
     const result: DocsContent = {};
@@ -223,6 +373,7 @@ const App: React.FC = () => {
 
     Object.entries(DOCS_CONTENT).forEach(([key, val]) => {
       const mainMatch = val.title.toLowerCase().includes(query) ||
+        (loadedContent[key]?.toLowerCase().includes(query)) ||
         (val.content?.toLowerCase().includes(query)) ||
         val.tags?.some(tag => tag.toLowerCase().includes(query));
 
@@ -233,6 +384,7 @@ const App: React.FC = () => {
         const matchingSubItems: Record<string, any> = {};
         Object.entries(val.subItems).forEach(([subKey, subVal]) => {
           if (subVal.title.toLowerCase().includes(query) ||
+            (loadedContent[subKey]?.toLowerCase().includes(query)) ||
             subVal.content.toLowerCase().includes(query) ||
             subVal.tags?.some(tag => tag.toLowerCase().includes(query))) {
             matchingSubItems[subKey] = subVal;
@@ -245,7 +397,7 @@ const App: React.FC = () => {
       }
     });
     return result;
-  }, [searchQuery]);
+  }, [searchQuery, loadedContent]);
 
   const activeSection = useMemo(() => {
     let section: DocSection | undefined = DOCS_CONTENT[activeTab];
@@ -317,7 +469,7 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
+          <div className="hidden md:flex flex-1 max-w-xl mx-8" ref={desktopSearchRef}>
             <div className="relative w-full group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="text-slate-400 group-focus-within:text-rose-500 transition-colors" size={18} />
@@ -328,8 +480,71 @@ const App: React.FC = () => {
                 className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 focus:bg-white transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsDesktopSearchFocused(true)}
                 aria-label="Search documentation"
               />
+              {/* Desktop Search Results Dropdown */}
+              {searchQuery && isDesktopSearchFocused && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 overflow-hidden z-50 max-h-[70vh] overflow-y-auto">
+                  {Object.keys(filteredDocs).length > 0 ? (
+                    <div className="p-2">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-2">
+                        {Object.keys(filteredDocs).length} result{Object.keys(filteredDocs).length !== 1 ? 's' : ''} found
+                      </p>
+                      {Object.entries(filteredDocs).map(([key, item]: [string, DocSection]) => {
+                        const Icon = item.icon;
+                        return (
+                          <div key={key}>
+                            <button
+                              onClick={() => {
+                                const query = searchQuery;
+                                setSearchQuery('');
+                                setIsDesktopSearchFocused(false);
+                                handleSearchNavigate(key, query);
+                              }}
+                              className="w-full text-left px-3 py-3 hover:bg-rose-50 rounded-xl group transition-all flex items-center gap-3"
+                            >
+                              <Icon size={18} className="text-slate-400 group-hover:text-rose-500 shrink-0" />
+                              <div className="min-w-0">
+                                <span className="text-sm font-semibold text-slate-700 group-hover:text-rose-900 block">{item.title}</span>
+                                {item.tags && (
+                                  <span className="text-[11px] text-slate-400 truncate block">
+                                    {item.tags.slice(0, 3).map(t => `#${t}`).join(' ')}
+                                  </span>
+                                )}
+                              </div>
+                              <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-rose-400 shrink-0" />
+                            </button>
+                            {/* Show matching sub-items */}
+                            {item.subItems && Object.entries(item.subItems).map(([subKey, subItem]) => (
+                              <button
+                                key={subKey}
+                                onClick={() => {
+                                  const query = searchQuery;
+                                  setSearchQuery('');
+                                  setIsDesktopSearchFocused(false);
+                                  handleSearchNavigate(subKey, query);
+                                }}
+                                className="w-full text-left px-3 py-2 pl-10 hover:bg-rose-50 rounded-xl group transition-all flex items-center gap-3"
+                              >
+                                {subItem.icon && <subItem.icon size={14} className="text-slate-400 group-hover:text-rose-500 shrink-0" />}
+                                <span className="text-[13px] font-medium text-slate-500 group-hover:text-rose-800">{subItem.title}</span>
+                                <ChevronRight size={12} className="ml-auto text-slate-300 group-hover:text-rose-400 shrink-0" />
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 px-4">
+                      <Search size={32} className="text-slate-200 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500 font-medium">No matching guides found</p>
+                      <p className="text-xs text-slate-400 mt-1">Try a different search term</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -505,6 +720,7 @@ const App: React.FC = () => {
               ) : (
                 <MarkdownRenderer
                   content={activeSection.content || ''}
+                  highlightTerm={searchHighlight}
                   onNavigate={(tab) => {
                     const exists = DOCS_CONTENT[tab] || Object.values(DOCS_CONTENT).some(p => p.subItems && p.subItems[tab]);
                     if (exists) {
@@ -676,9 +892,10 @@ const App: React.FC = () => {
                   <button
                     key={key}
                     onClick={() => {
-                      setActiveTab(key);
+                      const query = searchQuery;
                       setSearchQuery('');
                       setIsMobileSearchOpen(false);
+                      handleSearchNavigate(key, query);
                     }}
                     className="w-full text-left p-4 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-2xl group transition-all"
                   >
